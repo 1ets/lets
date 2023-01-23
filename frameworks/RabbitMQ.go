@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"lets-go-framework/lets"
-	"lets-go-framework/lets/rabbitmq"
-	"lets-go-framework/lets/types"
 	"os"
 	"time"
+
+	"github.com/1ets/lets"
+	"github.com/1ets/lets/rabbitmq"
+	"github.com/1ets/lets/types"
 
 	"github.com/rabbitmq/amqp091-go"
 )

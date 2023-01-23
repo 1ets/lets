@@ -1,6 +1,6 @@
 package types
 
-import "lets-go-framework/lets"
+import "github.com/1ets/lets"
 
 type IRabbitMQConfig interface {
 	GetServers() []IRabbitMQServer

@@ -1,10 +1,10 @@
 package boot
 
 import (
-	"lets-go-framework/lets"
-	"lets-go-framework/lets/drivers"
-	"lets-go-framework/lets/frameworks"
-	"lets-go-framework/lets/loader"
+	"github.com/1ets/lets"
+	"github.com/1ets/lets/drivers"
+	"github.com/1ets/lets/frameworks"
+	"github.com/1ets/lets/loader"
 )
 
 // List of initializer

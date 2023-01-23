@@ -3,8 +3,9 @@ package loader
 import (
 	"encoding/json"
 	"io"
-	"lets-go-framework/lets"
 	"sync"
+
+	"github.com/1ets/lets"
 
 	"github.com/kataras/golog"
 	"github.com/kataras/pio"

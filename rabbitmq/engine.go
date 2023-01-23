@@ -1,10 +1,11 @@
 package rabbitmq
 
 import (
-	"lets-go-framework/lets"
-	"lets-go-framework/lets/types"
 	"reflect"
 	"runtime"
+
+	"github.com/1ets/lets"
+	"github.com/1ets/lets/types"
 )
 
 // Engine for controller

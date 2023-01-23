@@ -2,10 +2,11 @@ package drivers
 
 import (
 	"database/sql"
-	"lets-go-framework/lets"
-	"lets-go-framework/lets/types"
 	"log"
 	"time"
+
+	"github.com/1ets/lets"
+	"github.com/1ets/lets/types"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

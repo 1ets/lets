@@ -1,7 +1,7 @@
 package types
 
 import (
-	"lets-go-framework/lets"
+	"github.com/1ets/lets"
 )
 
 // Default grpc configuration

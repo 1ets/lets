@@ -2,10 +2,11 @@ package frameworks
 
 import (
 	"fmt"
-	"lets-go-framework/lets"
-	"lets-go-framework/lets/types"
 	"log"
 	"net"
+
+	"github.com/1ets/lets"
+	"github.com/1ets/lets/types"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

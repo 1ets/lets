@@ -1,6 +1,6 @@
 package types
 
-import "lets-go-framework/lets"
+import "github.com/1ets/lets"
 
 // Default configuration
 const (

@@ -3,7 +3,8 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"lets-go-framework/lets"
+
+	"github.com/1ets/lets"
 )
 
 type IEvent interface {

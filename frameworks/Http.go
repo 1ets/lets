@@ -2,9 +2,10 @@ package frameworks
 
 import (
 	"fmt"
-	"lets-go-framework/lets"
-	"lets-go-framework/lets/types"
 	"time"
+
+	"github.com/1ets/lets"
+	"github.com/1ets/lets/types"
 
 	"github.com/gin-gonic/gin"
 )
