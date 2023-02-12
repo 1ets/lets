@@ -24,6 +24,7 @@ type rabbitServer struct {
 	connection    *amqp091.Connection
 	channel       *amqp091.Channel
 	retryDuration time.Duration
+	autoAck       bool
 }
 
 // Initialize RabbitMQ server.
@@ -33,6 +34,7 @@ func (r *rabbitServer) init(config types.IRabbitMQServer) {
 	r.config.Properties.SetClientConnectionName(os.Getenv("SERVICE_ID"))
 	r.retryDuration = time.Duration(10) * time.Second
 	r.config.Heartbeat = time.Duration(5) * time.Second
+	r.autoAck = config.GetAutoAck()
 }
 
 // Start consuming.
@@ -116,7 +118,7 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 	if r.deliveries, err = server.channel.Consume(
 		r.queue.Name,       // name
 		consumer.GetName(), // consumerTag,
-		false,              // autoAck
+		server.autoAck,     // autoAck
 		false,              // exclusive
 		false,              // noLocal
 		false,              // noWait
@@ -146,7 +148,7 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 		var body types.RabbitBody
 		err := json.Unmarshal(delivery.Body, &body)
 		if err != nil {
-			lets.LogE("RabbitMQ Server: ", err.Error())
+			lets.LogE("RabbitMQ Server: %s", err.Error())
 			continue
 		}
 
@@ -167,7 +169,9 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 		// Call event handler.
 		r.engine.Call(event.Name, &event)
 
-		delivery.Ack(false)
+		if server.autoAck {
+			delivery.Ack(false)
+		}
 	}
 }
 
