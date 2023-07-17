@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	"github.com/1ets/lets"
 )
@@ -26,6 +27,7 @@ type Event struct {
 	ReplyTo       *ReplyTo
 	CorrelationId string
 	Debug         bool
+	Body          IRabbitBody
 }
 
 func (m *Event) GetName() string {
@@ -56,8 +58,30 @@ func (m *Event) GetDebug() bool {
 	return m.Debug
 }
 
+func (m *Event) NilBody() bool {
+	if m.Body == nil {
+		return true
+	}
+
+	switch reflect.TypeOf(m.Body).Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+		return reflect.ValueOf(m.Body).IsNil()
+	}
+
+	return false
+}
+
 func (m *Event) GetBody() []byte {
-	body, err := json.Marshal(RabbitBody{Event: m.Name, Data: m.Data})
+	// Check if body is not set
+	if m.NilBody() {
+		m.Body = &RabbitBody{}
+	}
+
+	m.Body.SetEvent(m.Name)
+	m.Body.SetData(m.Data)
+	m.Body.Setup()
+
+	body, err := json.Marshal(m.Body)
 	if err != nil {
 		lets.LogE("RabbitEvent: %s", err.Error())
 		return nil
