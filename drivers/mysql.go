@@ -2,7 +2,12 @@ package drivers
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"log"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/1ets/lets"
@@ -16,11 +21,10 @@ import (
 var MySQLConfig types.IMySQL
 
 type mysqlProvider struct {
-	debug   bool
-	DSN     string
-	Gorm    *gorm.DB
-	Sql     *sql.DB
-	Adapter func(*gorm.DB)
+	debug bool
+	DSN   string
+	Gorm  *gorm.DB
+	Sql   *sql.DB
 }
 
 func (m *mysqlProvider) Connect() {
@@ -77,5 +81,105 @@ func MySQL() {
 	}
 	mySQL.Connect()
 
-	MySQLConfig.GetRepository().SetDriver(mySQL.Gorm)
+	// Inject Gorm into repository
+	for _, repository := range MySQLConfig.GetRepositories() {
+		repository.SetDriver(mySQL.Gorm)
+	}
+
+	// Migration
+	if MySQLConfig.Migration() {
+		err := mySQL.Gorm.AutoMigrate(&migration{})
+		if err != nil {
+			lets.LogE("Unable to run migration %w", err)
+			return
+		}
+		Migrate(mySQL.Gorm, mySQL.Sql)
+	}
+}
+
+type migration struct {
+	ID        uint   `gorm:"primaryKey,column:id"`
+	Migration string `gorm:"column:migration"`
+	Batch     uint   `gorm:"column:batch"`
+}
+
+func Migrate(g *gorm.DB, db *sql.DB) {
+	// Define batch number
+	var batch uint = 1
+	lastMigration := &migration{}
+	result := g.Last(lastMigration)
+	if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		lets.LogE("Unable to run migration %w", result.Error)
+		return
+	}
+
+	batch = lastMigration.Batch + 1
+
+	// Get migration files
+	files, err := os.ReadDir("migrations")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, file := range files {
+		name := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name()))
+
+		// Search migration
+		search := &migration{
+			Migration: name,
+		}
+
+		result := g.Where("migration = ?", name).First(search)
+		if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			lets.LogE("Unable to run migration %w", result.Error)
+			return
+		}
+
+		// Execute
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			lets.LogI("Migrating: %s", name)
+
+			// Read file content
+			filePath := fmt.Sprintf("migrations/%s", file.Name())
+			content, err := os.ReadFile(filePath)
+			if err != nil {
+				lets.LogE("Unable to run migration: %s", err.Error())
+				return
+			}
+
+			err = g.Transaction(func(tx *gorm.DB) error {
+				for _, query := range strings.Split(string(content), ";") {
+					query := strings.TrimSpace(query)
+					if query == "" {
+						continue
+					}
+
+					result = g.Exec(query)
+					if result.Error != nil {
+						return result.Error
+					}
+				}
+
+				return nil
+			})
+
+			if err != nil {
+				lets.LogE("Unable to run migration %w", err.Error())
+				return
+			}
+
+			// Insert migration record
+			m := &migration{
+				Migration: name,
+				Batch:     batch,
+			}
+
+			result = g.Create(m)
+			if result.Error != nil {
+				lets.LogE("Unable to run migration: %s", result.Error.Error())
+				return
+			}
+		}
+
+	}
 }
