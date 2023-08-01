@@ -92,7 +92,7 @@ func (r *RsaKeys) SavePrivateKey() (err error) {
 	if err != nil {
 		return
 	}
-	LogI("SAVED: %s", r.PrivateKeyFile)
+
 	pemFile.Close()
 	return
 }
@@ -126,7 +126,7 @@ func (r *RsaKeys) SavePublicKey() (err error) {
 func (r *RsaKeys) SetPrivateKey(privateKey []byte) (err error) {
 	block, _ := pem.Decode(privateKey)
 	if block == nil {
-		err = errors.New("private key not found")
+		err = errors.New("invalid private key")
 		return
 	}
 
@@ -146,7 +146,7 @@ func (r *RsaKeys) SetPrivateKeyString(privateKey string) (err error) {
 func (r *RsaKeys) SetPublicKey(publicKey []byte) (err error) {
 	block, _ := pem.Decode(publicKey)
 	if block == nil {
-		err = errors.New("public key key not found")
+		err = errors.New("invalid public key")
 		return
 	}
 
