@@ -145,7 +145,7 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 		}
 
 		// Bind body into types.RabbitBody.
-		var body types.RabbitBody
+		body := consumer.GetBody()
 		err := json.Unmarshal(delivery.Body, &body)
 		if err != nil {
 			lets.LogE("RabbitMQ Server: %s", err.Error())
@@ -158,8 +158,8 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 
 		// Create event data.
 		event := types.Event{
-			Name:          body.Event,
-			Data:          body.Data,
+			Name:          body.GetEvent(),
+			Data:          body.GetData(),
 			ReplyTo:       &replyTo,
 			CorrelationId: delivery.CorrelationId,
 			Exchange:      delivery.Exchange,

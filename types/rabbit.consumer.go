@@ -27,17 +27,19 @@ type IRabbitMQConsumer interface {
 	GetDebug() bool
 	GetListener() func(Engine)
 	GenerateReplyTo() ReplyTo
+	GetBody() IRabbitBody
 }
 
 // Target host information.
 type RabbitMQConsumer struct {
-	Name         string `json:"name"`
-	Exchange     string `json:"exchange"`
-	ExchangeType string `json:"type"`
-	RoutingKey   string `json:"routing_key"`
-	Queue        string `json:"queue"`
-	Debug        string `json:"debug"`
-	Listener     func(Engine)
+	Name          string `json:"name"`
+	Exchange      string `json:"exchange"`
+	ExchangeType  string `json:"type"`
+	RoutingKey    string `json:"routing_key"`
+	Queue         string `json:"queue"`
+	Debug         string `json:"debug"`
+	Listener      func(Engine)
+	CustomPayload IRabbitBody `json:"custom_payload"`
 }
 
 // Get Name.
@@ -114,4 +116,13 @@ func (r *RabbitMQConsumer) GetListener() func(Engine) {
 func (r *RabbitMQConsumer) GenerateReplyTo() (replyTo ReplyTo) {
 	lets.Bind(r, &replyTo)
 	return
+}
+
+// Get payload structure for received message.
+func (r *RabbitMQConsumer) GetBody() IRabbitBody {
+	if lets.IsNil(r.CustomPayload) {
+		return &RabbitBody{}
+	}
+
+	return r.CustomPayload
 }
