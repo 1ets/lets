@@ -3,7 +3,7 @@ package loader
 import "fmt"
 
 func Launching() {
-	fmt.Println("///////////////////////////////")
-	fmt.Println("// WELCOME TO LETS FRAMEWORK //")
-	fmt.Println("///////////////////////////////")
+	fmt.Println("////////////////////")
+	fmt.Println("// LETS FRAMEWORK //")
+	fmt.Println("////////////////////")
 }
