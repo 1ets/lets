@@ -5,7 +5,9 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"os"
+	"reflect"
 )
 
 // Handle load and save keys to memory/storage.
@@ -132,8 +134,29 @@ func (r *RsaKeys) SetPrivateKey(privateKey []byte) (err error) {
 
 	r.PrivateKey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
+		return r.setPrivateKeyPKCS8(privateKey)
+	}
+	return
+}
+
+// Parses a PEM encoded private key.
+func (r *RsaKeys) setPrivateKeyPKCS8(privateKey []byte) (err error) {
+	block, _ := pem.Decode(privateKey)
+	if block == nil {
+		err = errors.New("invalid private key")
 		return
 	}
+
+	parsedPKCS8, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		return
+	}
+
+	fmt.Println(reflect.TypeOf(parsedPKCS8))
+
+	// TODO: add if parsed using pkcs
+	r.PrivateKey = parsedPKCS8.(*rsa.PrivateKey)
+
 	return
 }
 
