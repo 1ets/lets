@@ -151,12 +151,34 @@ func (r *RsaKeys) SetPublicKey(publicKey []byte) (err error) {
 	}
 
 	var key interface{}
-	// key, err = x509.ParsePKIXPublicKey(block.Bytes)
-	// if err != nil {
-	// 	return
-	// }
 
 	key, err = x509.ParsePKCS1PublicKey(block.Bytes)
+	if err != nil {
+		LogD("Cannot parse using PKCS1, trying parse using PKIX.")
+		return r.setPublicKeyPKIX(publicKey)
+	}
+
+	switch keyType := key.(type) {
+	case *rsa.PublicKey:
+		r.PublicKey = keyType
+	default:
+		err = errors.New("invalid public key type")
+
+	}
+
+	return
+}
+
+func (r *RsaKeys) setPublicKeyPKIX(publicKey []byte) (err error) {
+	block, _ := pem.Decode(publicKey)
+	if block == nil {
+		err = errors.New("invalid public key")
+		return
+	}
+
+	var key interface{}
+
+	key, err = x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
 		return
 	}
