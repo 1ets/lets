@@ -86,6 +86,7 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 		lets.LogE("RabbitMQ: %s", err.Error())
 		return
 	}
+	defer server.channel.Close()
 
 	// Declare (or using existing) queue.
 	if r.queue, err = server.channel.QueueDeclare(
@@ -110,7 +111,9 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 	); err != nil {
 		lets.LogE("RabbitMQ: %s", err.Error())
 
-		RabbitMQ() // Retry Connection
+		// Retry Connection
+		time.Sleep(10 * time.Second)
+		go r.consume(server, consumer)
 		return
 	}
 
@@ -125,6 +128,10 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 		nil,                // arguments
 	); err != nil {
 		lets.LogE("RabbitMQ: %s", err.Error())
+
+		// Retry Connection
+		time.Sleep(10 * time.Second)
+		go r.consume(server, consumer)
 		return
 	}
 
