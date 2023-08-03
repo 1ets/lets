@@ -169,13 +169,14 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 		// Call event handler.
 		r.engine.Call(event.Name, &event)
 
-		if server.autoAck {
+		// If not auto ack, trigger ackknowledge for message
+		if !server.autoAck {
 			delivery.Ack(false)
 		}
 	}
 }
 
-// RabbitMQ consumer definitions.
+// RabbitMQ publisher definitions.
 type RabbitPublisher struct {
 	channel *amqp091.Channel
 	name    string
