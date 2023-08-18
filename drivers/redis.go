@@ -30,7 +30,7 @@ func Redis() {
 		return
 	}
 
-	lets.LogI("MySQL Starting ...")
+	lets.LogI("Redis Starting ...")
 
 	redis := redisProvider{
 		dsn:      RedisConfig.GetDsn(),

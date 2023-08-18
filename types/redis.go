@@ -2,6 +2,8 @@ package types
 
 import (
 	"fmt"
+
+	"github.com/1ets/lets"
 )
 
 const (
@@ -32,7 +34,7 @@ type Redis struct {
 
 func (r *Redis) GetHost() string {
 	if r.Host == "" {
-		fmt.Println("Configs Redis: REDIS_HOST is not set in .env file, using default configuration.")
+		lets.LogW("Configs Redis: REDIS_HOST is not set in .env file, using default configuration.")
 		return REDIS_HOST
 	}
 	return r.Host
@@ -40,7 +42,7 @@ func (r *Redis) GetHost() string {
 
 func (r *Redis) GetPort() string {
 	if r.Port == "" {
-		fmt.Println("Configs Redis: REDIS_PORT is not set in .env file, using default configuration.")
+		lets.LogW("Configs Redis: REDIS_PORT is not set in .env file, using default configuration.")
 		return REDIS_PORT
 	}
 	return r.Port
@@ -48,7 +50,7 @@ func (r *Redis) GetPort() string {
 
 func (r *Redis) GetPassword() string {
 	if r.Password == "" {
-		fmt.Println("Configs Redis: REDIS_PASSWORD is not set in .env file, using default configuration.")
+		lets.LogW("Configs Redis: REDIS_PASSWORD is not set in .env file, using default configuration.")
 		return REDIS_PASSWORD
 	}
 	return r.Password
@@ -56,7 +58,7 @@ func (r *Redis) GetPassword() string {
 
 func (r *Redis) GetDatabase() int {
 	if r.Database == 0 {
-		fmt.Println("Configs Redis: REDIS_DATABASE is not set in .env file, using default configuration.")
+		lets.LogW("Configs Redis: REDIS_DATABASE is not set in .env file, using default configuration.")
 		return REDIS_DATABASE
 	}
 	return r.Database
