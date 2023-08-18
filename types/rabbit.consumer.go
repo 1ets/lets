@@ -10,10 +10,10 @@ import (
 const (
 	LISTEN_RABBIT_NAME          = "Default Manager"
 	LISTEN_RABBIT_VHOST         = "/"
-	LISTEN_RABBIT_EXCHANGE      = "lets"
+	LISTEN_RABBIT_EXCHANGE      = ""
 	LISTEN_RABBIT_EXCHANGE_TYPE = amqp091.ExchangeDirect
-	LISTEN_RABBIT_ROUTING_KEY   = "callback"
-	LISTEN_RABBIT_QUEUE         = "lets.callback"
+	LISTEN_RABBIT_ROUTING_KEY   = ""
+	LISTEN_RABBIT_QUEUE         = ""
 	LISTEN_RABBIT_DEBUG         = true
 )
 
