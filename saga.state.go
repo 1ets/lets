@@ -3,9 +3,9 @@ package lets
 import "github.com/bongnv/saga"
 
 type SagaState struct {
-	state saga.State
+	ProcessState saga.State
 }
 
 func (t *SagaState) State() saga.State {
-	return t.state
+	return t.ProcessState
 }
