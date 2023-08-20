@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -61,7 +62,13 @@ func (h *HttpBuilder) AddHeader(name string, value string) {
 // Automatically post data to oy.
 func (h *HttpBuilder) Post(endPoint string, body interface{}) (fullUrl, response string, err error) {
 	fullUrl = fmt.Sprintf("%s%s", h.url, endPoint)
-	payloadString := ToJson(body)
+
+	var payloadString string
+	if reflect.TypeOf(body) == reflect.TypeOf([]byte(nil)) {
+		payloadString = string(body.([]byte))
+	} else {
+		payloadString = ToJson(body)
+	}
 
 	LogI("HttpBuilder: POST \"%s\"\n%s", fullUrl, payloadString)
 
