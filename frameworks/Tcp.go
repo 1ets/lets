@@ -153,7 +153,7 @@ func (tcp *tcpClient) connect() (err error) {
 		return
 	}
 
-	if err = tcp.connection.(*net.TCPConn).SetKeepAlivePeriod(30 * time.Second); err != nil {
+	if err = tcp.connection.(*net.TCPConn).SetKeepAlivePeriod(10 * time.Second); err != nil {
 		lets.LogE("TCP Client: set keep alive period: %v", err)
 		return
 	}
