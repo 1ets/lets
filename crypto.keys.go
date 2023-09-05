@@ -63,14 +63,14 @@ func (r *RsaKeys) LoadPublicKey() (err error) {
 ///////////
 
 // Save all keys into storage.
-func (r *RsaKeys) Save() (err error) {
+func (r *RsaKeys) SavePKCS1() (err error) {
 	LogI("SAVED: %s", r.PrivateKeyFile)
-	err = r.SavePrivateKey()
+	err = r.SavePrivateKeyPKCS1()
 	if err != nil {
 		return
 	}
 
-	err = r.SavePublicKey()
+	err = r.SavePublicKeyPKCS1()
 	if err != nil {
 		return
 	}
@@ -78,8 +78,8 @@ func (r *RsaKeys) Save() (err error) {
 	return
 }
 
-// Save PrivateKey to storage.
-func (r *RsaKeys) SavePrivateKey() (err error) {
+// Save PrivateKey to storage in PKCS1.
+func (r *RsaKeys) SavePrivateKeyPKCS1() (err error) {
 	pemFile, err := os.Create(r.PrivateKeyFile)
 	if err != nil {
 		return
@@ -99,8 +99,8 @@ func (r *RsaKeys) SavePrivateKey() (err error) {
 	return
 }
 
-// Save PublicKey to storage.
-func (r *RsaKeys) SavePublicKey() (err error) {
+// Save PublicKey to storage in PKCS1.
+func (r *RsaKeys) SavePublicKeyPKCS1() (err error) {
 	pemFile, err := os.Create(r.PublicKeyFile)
 	if err != nil {
 		return
@@ -109,6 +109,75 @@ func (r *RsaKeys) SavePublicKey() (err error) {
 	var pemKey = &pem.Block{
 		Type:  "PUBLIC KEY",
 		Bytes: x509.MarshalPKCS1PublicKey(r.PublicKey),
+	}
+
+	err = pem.Encode(pemFile, pemKey)
+	if err != nil {
+		return
+	}
+
+	pemFile.Close()
+	return
+}
+
+// Save all keys into storage in PKCS8.
+func (r *RsaKeys) SavePKCS8() (err error) {
+	LogI("SAVED: %s", r.PrivateKeyFile)
+
+	err = r.SavePrivateKeyPKCS8()
+	if err != nil {
+		return
+	}
+
+	err = r.SavePublicKeyPKIX()
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+// Save PrivateKey to storage in PKCS8 format.
+func (r *RsaKeys) SavePrivateKeyPKCS8() (err error) {
+	pemFile, err := os.Create(r.PrivateKeyFile)
+	if err != nil {
+		return
+	}
+
+	privateKeyPKCS8, err := x509.MarshalPKCS8PrivateKey(r.PrivateKey)
+	if err != nil {
+		return
+	}
+
+	pemKey := &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: privateKeyPKCS8,
+	}
+
+	err = pem.Encode(pemFile, pemKey)
+	if err != nil {
+		return
+	}
+
+	pemFile.Close()
+	return
+}
+
+// Save PublicKey to storage in PKIX format.
+func (r *RsaKeys) SavePublicKeyPKIX() (err error) {
+	pemFile, err := os.Create(r.PublicKeyFile)
+	if err != nil {
+		return
+	}
+
+	publicKeyPKIX, err := x509.MarshalPKIXPublicKey(r.PublicKey)
+	if err != nil {
+		return
+	}
+
+	var pemKey = &pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: publicKeyPKIX,
 	}
 
 	err = pem.Encode(pemFile, pemKey)
