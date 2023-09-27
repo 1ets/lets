@@ -161,7 +161,15 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 
 		// Read reply to
 		var replyTo types.ReplyTo
-		json.Unmarshal([]byte(delivery.ReplyTo), &replyTo)
+		if err := json.Unmarshal([]byte(delivery.ReplyTo), &replyTo); err != nil {
+			lets.LogE("RabbitMQ Server: %s", err.Error())
+
+			if delivery.ReplyTo != "" {
+				lets.LogE("RabbitMQ Server: ReplyTo Value: %s", delivery.ReplyTo)
+
+				replyTo.RoutingKey = delivery.ReplyTo
+			}
+		}
 
 		// Create event data.
 		event := types.Event{
