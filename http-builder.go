@@ -52,14 +52,14 @@ func (h *HttpBuilder) SetClient(client *http.Client) {
 
 // Set End Point
 func (h *HttpBuilder) SetUrl(url string) {
-	LogI("HttpBuilder: set endPoint to \"%s\"", url)
+	// LogD("HttpBuilder: set endPoint to \"%s\"", url)
 
 	h.url = url
 }
 
 // Setting up header name and value.
 func (h *HttpBuilder) AddHeader(name string, value string) {
-	LogI("HttpBuilder: add header \"%s\":\"%s\"", name, value)
+	// LogD("HttpBuilder: add header \"%s\":\"%s\"", name, value)
 
 	for _, header := range h.headers {
 		if header.Name == name {
