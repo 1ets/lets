@@ -1,6 +1,7 @@
 package lets
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net/http"
@@ -25,8 +26,22 @@ type HttpBuilder struct {
 
 // Set http client with default configuration.
 func (h *HttpBuilder) Default() {
+	defaultTransport := http.DefaultTransport.(*http.Transport)
+
+	// Create new Transport that ignores self-signed SSL
+	customTransport := &http.Transport{
+		Proxy:                 defaultTransport.Proxy,
+		DialContext:           defaultTransport.DialContext,
+		MaxIdleConns:          defaultTransport.MaxIdleConns,
+		IdleConnTimeout:       defaultTransport.IdleConnTimeout,
+		ExpectContinueTimeout: defaultTransport.ExpectContinueTimeout,
+		TLSHandshakeTimeout:   defaultTransport.TLSHandshakeTimeout,
+		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
+	}
+
 	h.client = &http.Client{
-		Timeout: time.Duration(5) * time.Second,
+		Timeout:   time.Duration(5) * time.Second,
+		Transport: customTransport,
 	}
 }
 
