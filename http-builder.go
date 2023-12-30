@@ -117,7 +117,7 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}) (fullUrl, response
 	return
 }
 
-// Post request.
+// Get request.
 func (h *HttpBuilder) Get(endPoint string, body interface{}) (fullUrl, response string, err error) {
 	fullUrl = fmt.Sprintf("%s%s", h.url, endPoint)
 
@@ -132,7 +132,7 @@ func (h *HttpBuilder) Get(endPoint string, body interface{}) (fullUrl, response 
 	LogI("HttpBuilder: GET \"%s\"\n%s", fullUrl, payloadString)
 
 	// payload := strings.NewReader(payloadString)
-	req, err := http.NewRequest(http.MethodPost, fullUrl+"?"+payloadString, &strings.Reader{})
+	req, err := http.NewRequest(http.MethodGet, fullUrl+"?"+payloadString, &strings.Reader{})
 	if err != nil {
 		return
 	}
