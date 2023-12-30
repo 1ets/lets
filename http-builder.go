@@ -8,6 +8,8 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/google/go-querystring/query"
 )
 
 // Type for saving header value.
@@ -74,7 +76,7 @@ func (h *HttpBuilder) AddHeader(name string, value string) {
 	})
 }
 
-// Automatically post data to oy.
+// Post request.
 func (h *HttpBuilder) Post(endPoint string, body interface{}) (fullUrl, response string, err error) {
 	fullUrl = fmt.Sprintf("%s%s", h.url, endPoint)
 
@@ -89,6 +91,48 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}) (fullUrl, response
 
 	payload := strings.NewReader(payloadString)
 	req, err := http.NewRequest(http.MethodPost, fullUrl, payload)
+	if err != nil {
+		return
+	}
+
+	// Header Setup
+	for _, header := range h.headers {
+		LogI("HttpBuilder: SetHeader: %s: %s", header.Name, header.Value)
+		req.Header.Add(header.Name, header.Value)
+	}
+
+	h.response, err = h.client.Do(req)
+	if err != nil {
+		return
+	}
+	defer h.response.Body.Close()
+
+	resBody, err := io.ReadAll(h.response.Body)
+	if err != nil {
+		return
+	}
+
+	response = string(resBody)
+	LogI("HttpBuilder: Response: %v \n%s", h.response.StatusCode, response)
+	return
+}
+
+// Post request.
+func (h *HttpBuilder) Get(endPoint string, body interface{}) (fullUrl, response string, err error) {
+	fullUrl = fmt.Sprintf("%s%s", h.url, endPoint)
+
+	var payloadString string
+	if reflect.TypeOf(body) == reflect.TypeOf([]byte(nil)) {
+		payloadString = string(body.([]byte))
+	} else {
+		v, _ := query.Values(body)
+		payloadString = v.Encode()
+	}
+
+	LogI("HttpBuilder: GET \"%s\"\n%s", fullUrl, payloadString)
+
+	// payload := strings.NewReader(payloadString)
+	req, err := http.NewRequest(http.MethodPost, fullUrl+"?"+payloadString, &strings.Reader{})
 	if err != nil {
 		return
 	}
