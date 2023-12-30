@@ -18,12 +18,18 @@ type httpHeader struct {
 	Value string
 }
 
+type basicAuth struct {
+	Username string
+	Password string
+}
+
 // Type for saving oy builder params.
 type HttpBuilder struct {
 	url      string
 	client   *http.Client
 	headers  []*httpHeader
 	response *http.Response
+	basic    basicAuth
 }
 
 // Set http client with default configuration.
@@ -57,6 +63,12 @@ func (h *HttpBuilder) SetUrl(url string) {
 	// LogD("HttpBuilder: set endPoint to \"%s\"", url)
 
 	h.url = url
+}
+
+// Set Basic Auth
+func (h *HttpBuilder) SetBasicAuth(username, password string) {
+	h.basic.Username = username
+	h.basic.Password = password
 }
 
 // Setting up header name and value.
@@ -99,6 +111,11 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}) (fullUrl, response
 	for _, header := range h.headers {
 		LogI("HttpBuilder: SetHeader: %s: %s", header.Name, header.Value)
 		req.Header.Add(header.Name, header.Value)
+	}
+
+	// Basic Auth
+	if h.basic.Username != "" {
+		req.SetBasicAuth(h.basic.Username, h.basic.Password)
 	}
 
 	h.response, err = h.client.Do(req)
