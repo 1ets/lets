@@ -20,6 +20,7 @@ var Servers = []func(){
 	frameworks.Grpc,
 	frameworks.RabbitMQ,
 	frameworks.Tcp,
+	frameworks.WebSocket,
 	drivers.MySQL,
 	drivers.Redis,
 	drivers.MongoDB,
