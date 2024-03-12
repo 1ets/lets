@@ -2,7 +2,6 @@ package types
 
 import (
 	"github.com/1ets/lets"
-	"github.com/1ets/lets/websocket"
 )
 
 // Default gRPC configuration
@@ -15,39 +14,39 @@ const (
 type IWebSocketServer interface {
 	GetPort() string
 	GetMode() string
-	GetHandler() func(*websocket.WebSocketHandle)
+	GetRoutes() []IWebSocketRoute
 }
 
 // Serve information
 type WebSocketServer struct {
-	Port   string
-	Mode   string
-	Router func(*websocket.WebSocketHandle)
+	Port          string
+	Mode          string
+	Routes        []IWebSocketRoute
 }
 
 // Get Port
-func (hs *WebSocketServer) GetPort() string {
-	if hs.Port == "" {
+func (wss *WebSocketServer) GetPort() string {
+	if wss.Port == "" {
 		lets.LogW("Config: SERVER_WS_PORT is not set, using default configuration.")
 
 		return SERVER_WS_PORT
 	}
 
-	return hs.Port
+	return wss.Port
 }
 
 // Get Mode
-func (hs *WebSocketServer) GetMode() string {
-	if hs.Mode == "" {
+func (wss *WebSocketServer) GetMode() string {
+	if wss.Mode == "" {
 		lets.LogW("Config: SERVER_WS_MODE is not set, using default configuration.")
 
 		return SERVER_WS_MODE
 	}
 
-	return hs.Mode
+	return wss.Mode
 }
 
 // Get Router
-func (hs *WebSocketServer) GetHandler() func(*websocket.WebSocketHandle) {
-	return hs.Router
+func (wss *WebSocketServer) GetRoutes() []IWebSocketRoute {
+	return wss.Routes
 }

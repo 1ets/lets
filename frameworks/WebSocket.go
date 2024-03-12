@@ -6,7 +6,6 @@ import (
 
 	"github.com/1ets/lets"
 	"github.com/1ets/lets/types"
-	"github.com/1ets/lets/websocket"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,9 +15,10 @@ var WebSocketConfig types.IWebSocketServer
 
 // WebSocket service struct
 type webSocketServer struct {
-	server  string
-	engine  *gin.Engine
-	handler func(*websocket.WebSocketHandle) // Handle endpoint event
+	server string
+	engine *gin.Engine
+	routes []types.IWebSocketRoute // Handle endpoint event
+	debug  bool
 }
 
 // Initialize service
@@ -27,7 +27,8 @@ func (ws *webSocketServer) init() {
 
 	ws.server = fmt.Sprintf(":%s", WebSocketConfig.GetPort())
 	ws.engine = gin.New()
-	ws.handler = WebSocketConfig.GetHandler()
+	ws.routes = WebSocketConfig.GetRoutes()
+	ws.debug = WebSocketConfig.GetMode() == "debug"
 
 	var defaultLogFormatter = func(param gin.LogFormatterParams) string {
 		var statusColor, methodColor, resetColor string
@@ -56,6 +57,12 @@ func (ws *webSocketServer) init() {
 	ws.engine.Use(gin.LoggerWithFormatter(defaultLogFormatter))
 }
 
+func (ws *webSocketServer) setupRoutes() {
+	for _, route := range ws.routes {
+		route.Initialize(ws.engine, ws.debug)
+	}
+}
+
 // Run service
 func (ws *webSocketServer) serve() {
 	ws.engine.Run(ws.server)
@@ -70,12 +77,7 @@ func WebSocket() {
 	lets.LogI("WebSocket Server Starting ...")
 
 	var ws webSocketServer
-
 	ws.init()
-
-	var wsHandler websocket.WebSocketHandle = websocket.WebSocketHandle{
-		Gin: ws.engine,
-	}
-	ws.handler(&wsHandler)
+	ws.setupRoutes()
 	ws.serve()
 }
