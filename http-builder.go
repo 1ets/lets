@@ -99,8 +99,6 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}) (fullUrl, response
 		payloadString = ToJson(body)
 	}
 
-	LogI("HttpBuilder: POST \"%s\"\n%s", fullUrl, payloadString)
-
 	payload := strings.NewReader(payloadString)
 	req, err := http.NewRequest(http.MethodPost, fullUrl, payload)
 	if err != nil {
@@ -112,6 +110,7 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}) (fullUrl, response
 		LogI("HttpBuilder: SetHeader: %s: %s", header.Name, header.Value)
 		req.Header.Add(header.Name, header.Value)
 	}
+	LogI("HttpBuilder: POST \"%s\" payload: \n%s\n", fullUrl, payloadString)
 
 	// Basic Auth
 	if h.basic.Username != "" {
@@ -130,7 +129,10 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}) (fullUrl, response
 	}
 
 	response = string(resBody)
-	LogI("HttpBuilder: Response: %v \n%s", h.response.StatusCode, response)
+
+	LogI("HttpBuilder: Response Status: %v", h.response.StatusCode)
+	LogI("HttpBuilder: Response Body: %s\n\n", response)
+
 	return
 }
 
@@ -146,8 +148,6 @@ func (h *HttpBuilder) Get(endPoint string, body interface{}) (fullUrl, response 
 		payloadString = v.Encode()
 	}
 
-	LogI("HttpBuilder: GET \"%s\"\n%s", fullUrl, payloadString)
-
 	// payload := strings.NewReader(payloadString)
 	req, err := http.NewRequest(http.MethodGet, fullUrl+"?"+payloadString, &strings.Reader{})
 	if err != nil {
@@ -159,6 +159,7 @@ func (h *HttpBuilder) Get(endPoint string, body interface{}) (fullUrl, response 
 		LogI("HttpBuilder: SetHeader: %s: %s", header.Name, header.Value)
 		req.Header.Add(header.Name, header.Value)
 	}
+	LogI("HttpBuilder: POST \"%s\"; Payload: \n%s\n", fullUrl, payloadString)
 
 	h.response, err = h.client.Do(req)
 	if err != nil {
@@ -172,7 +173,8 @@ func (h *HttpBuilder) Get(endPoint string, body interface{}) (fullUrl, response 
 	}
 
 	response = string(resBody)
-	LogI("HttpBuilder: Response: %v \n%s", h.response.StatusCode, response)
+	LogI("HttpBuilder: Response Status: %v", h.response.StatusCode)
+	LogI("HttpBuilder: Response Body: %s\n\n", response)
 	return
 }
 
