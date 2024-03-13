@@ -2,7 +2,7 @@ package types
 
 import (
 	"encoding/json"
-	"log"
+	"net/http"
 
 	"github.com/1ets/lets"
 	"github.com/gin-gonic/gin"
@@ -54,11 +54,14 @@ func (wsr *WebSocketRoute) controller(c *gin.Context) {
 	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
 	}
 
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Print("upgrade:", err)
+		lets.LogE("WebSocket Server.Upgrade: %v", err)
 		return
 	}
 	defer ws.Close()
@@ -68,7 +71,7 @@ func (wsr *WebSocketRoute) controller(c *gin.Context) {
 	for {
 		messageType, message, err := ws.ReadMessage()
 		if err != nil {
-			log.Println("read:", err)
+			lets.LogE("WebSocket Server.ReadMessage: %v", err)
 			break
 		}
 
