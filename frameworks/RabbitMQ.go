@@ -160,7 +160,7 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 		}
 
 		// Read reply to
-		var replyTo types.ReplyTo
+		var replyTo types.IReplyTo
 		if delivery.ReplyTo != "" {
 			if err := json.Unmarshal([]byte(delivery.ReplyTo), &replyTo); err != nil {
 				lets.LogE("RabbitMQ Server: %s", err.Error())
@@ -168,7 +168,7 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 				if delivery.ReplyTo != "" {
 					lets.LogE("RabbitMQ Server: ReplyTo Value: %s", delivery.ReplyTo)
 
-					replyTo.RoutingKey = delivery.ReplyTo
+					replyTo.SetRoutingKey(delivery.ReplyTo)
 				}
 			}
 		}
@@ -177,7 +177,7 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 		event := types.Event{
 			Name:          body.GetEvent(),
 			Data:          body.GetData(),
-			ReplyTo:       &replyTo,
+			ReplyTo:       replyTo,
 			CorrelationId: delivery.CorrelationId,
 			Exchange:      delivery.Exchange,
 			RoutingKey:    delivery.RoutingKey,
@@ -211,10 +211,12 @@ func (r *RabbitPublisher) Publish(event types.IEvent) (err error) {
 	}
 
 	var body = event.GetBody()
+	var replyTo = event.GetReplyTo()
+
 	// Encode object to json string
 	if event.GetDebug() {
 		seqNo := r.channel.GetNextPublishSeqNo()
-		lets.LogD("RabbitMQ Publisher: to: exchange '%s'; key: '%s'", event.GetExchange(), event.GetRoutingKey())
+		lets.LogD("RabbitMQ Publisher: to: exchange '%s'; routing key/queue: '%s'", event.GetExchange(), event.GetRoutingKey())
 		lets.LogD("RabbitMQ Publisher: sequence no: %d; %d Bytes; Body: \n%s", seqNo, len(body), string(body))
 	}
 
@@ -233,7 +235,7 @@ func (r *RabbitPublisher) Publish(event types.IEvent) (err error) {
 			DeliveryMode:    amqp091.Transient, // 1=non-persistent, 2=persistent
 			Priority:        0,                 // 0-9
 			// a bunch of application/implementation-specific fields
-			ReplyTo:       event.GetReplyTo().GetJson(),
+			ReplyTo:       replyTo.Get(),
 			CorrelationId: event.GetCorrelationId(),
 		},
 	); err != nil {

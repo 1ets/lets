@@ -11,7 +11,7 @@ import (
 type IEvent interface {
 	GetName() string
 	GetData() interface{}
-	GetReplyTo() *ReplyTo
+	GetReplyTo() IReplyTo
 	GetCorrelationId() string
 	GetExchange() string
 	GetRoutingKey() string
@@ -24,7 +24,7 @@ type Event struct {
 	Exchange      string // Service exchange.
 	RoutingKey    string // Service routing key.
 	Data          interface{}
-	ReplyTo       *ReplyTo
+	ReplyTo       IReplyTo
 	CorrelationId string
 	Debug         bool
 	Body          IRabbitBody
@@ -38,7 +38,7 @@ func (m *Event) GetData() interface{} {
 	return m.Data
 }
 
-func (m *Event) GetReplyTo() *ReplyTo {
+func (m *Event) GetReplyTo() IReplyTo {
 	return m.ReplyTo
 }
 
@@ -90,9 +90,37 @@ func (m *Event) GetBody() []byte {
 	return body
 }
 
+type IReplyTo interface {
+	SetExchange(string)
+	GetExchange() string
+	SetRoutingKey(string)
+	GetRoutingKey() string
+	Get() string
+}
+
 type ReplyTo struct {
 	Exchange   string `json:"exchange"`
 	RoutingKey string `json:"routing_key"`
+}
+
+func (r *ReplyTo) SetExchange(exchange string) {
+	r.Exchange = exchange
+}
+
+func (r *ReplyTo) GetExchange() string {
+	return r.Exchange
+}
+
+func (r *ReplyTo) SetRoutingKey(routingKey string) {
+	r.RoutingKey = routingKey
+}
+
+func (r *ReplyTo) GetRoutingKey() string {
+	return r.RoutingKey
+}
+
+func (r *ReplyTo) Get() string {
+	return r.GetJson()
 }
 
 func (r *ReplyTo) GetJson() string {
