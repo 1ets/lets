@@ -91,10 +91,10 @@ func (m *Event) GetBody() []byte {
 }
 
 type IReplyTo interface {
-	SetExchange(string)
-	GetExchange() string
+	// SetExchange(string)
+	// GetExchange() string
 	SetRoutingKey(string)
-	GetRoutingKey() string
+	// GetRoutingKey() string
 	Get() string
 }
 
@@ -103,21 +103,21 @@ type ReplyTo struct {
 	RoutingKey string `json:"routing_key"`
 }
 
-func (r *ReplyTo) SetExchange(exchange string) {
-	r.Exchange = exchange
-}
+// func (r *ReplyTo) SetExchange(exchange string) {
+// 	r.Exchange = exchange
+// }
 
-func (r *ReplyTo) GetExchange() string {
-	return r.Exchange
-}
+// func (r *ReplyTo) GetExchange() string {
+// 	return r.Exchange
+// }
 
 func (r *ReplyTo) SetRoutingKey(routingKey string) {
 	r.RoutingKey = routingKey
 }
 
-func (r *ReplyTo) GetRoutingKey() string {
-	return r.RoutingKey
-}
+// func (r *ReplyTo) GetRoutingKey() string {
+// 	return r.RoutingKey
+// }
 
 func (r *ReplyTo) Get() string {
 	return r.GetJson()
