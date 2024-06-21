@@ -79,6 +79,8 @@ type rabbitConsumer struct {
 
 // Start consuming.
 func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQConsumer) {
+	lets.LogI("RabbitMQ Consumer: consuming ...")
+
 	var err error
 
 	// Create channel connection.
@@ -139,12 +141,11 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 }
 
 func (r *rabbitConsumer) listenMessage(server *rabbitServer, consumer types.IRabbitMQConsumer) {
-	lets.LogI("RabbitMQ Message Listener: %s", "Delivery channel is open.")
-
 	cleanup := func() {
-		lets.LogE("RabbitMQ Message Listener: %s", "Delivery channel is closed.")
-		lets.LogI("RabbitMQ Message Listener: %s", "Delivery is restarting.")
+		lets.LogE("RabbitMQ Server DC: %s", "Delivery channel is closed.")
+		// go RabbitMQ()
 
+		// r.consume(server, consumer)
 		r.listenMessage(server, consumer)
 
 		r.done <- nil
@@ -229,22 +230,29 @@ func (r *RabbitPublisher) Publish(event types.IEvent) (err error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
+	publishing := amqp091.Publishing{
+		Headers:         amqp091.Table{},
+		ContentType:     "application/json",
+		ContentEncoding: "",
+		Body:            []byte(body),
+		DeliveryMode:    amqp091.Transient, // 1=non-persistent, 2=persistent
+		Priority:        0,                 // 0-9
+		// a bunch of application/implementation-specific fields
+		// ReplyTo:       replyTo.Get(),
+		CorrelationId: event.GetCorrelationId(),
+	}
+
+	if replyTo != nil {
+		publishing.ReplyTo = replyTo.Get()
+	}
+
 	if err = r.channel.PublishWithContext(ctx,
 		event.GetExchange(),   // Exchange
 		event.GetRoutingKey(), // RoutingKey or queues
 		false,                 // Mandatory
 		false,                 // Immediate
-		amqp091.Publishing{
-			Headers:         amqp091.Table{},
-			ContentType:     "application/json",
-			ContentEncoding: "",
-			Body:            []byte(body),
-			DeliveryMode:    amqp091.Transient, // 1=non-persistent, 2=persistent
-			Priority:        0,                 // 0-9
-			// a bunch of application/implementation-specific fields
-			ReplyTo:       replyTo.Get(),
-			CorrelationId: event.GetCorrelationId(),
-		},
+		publishing,
 	); err != nil {
 		lets.LogE("RabbitMQ Publisher: %s", err.Error())
 		return
