@@ -135,16 +135,23 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 		return
 	}
 
+	r.listenMessage(server, consumer)
+}
+
+func (r *rabbitConsumer) listenMessage(server *rabbitServer, consumer types.IRabbitMQConsumer) {
+	lets.LogI("RabbitMQ Message Listener: %s", "Delivery channel is open.")
+
 	cleanup := func() {
-		lets.LogE("RabbitMQ Server: %s", "Delivery channel is closed.")
+		lets.LogE("RabbitMQ Message Listener: %s", "Delivery channel is closed.")
+		lets.LogI("RabbitMQ Message Listener: %s", "Delivery is restarting.")
+
+		r.listenMessage(server, consumer)
+
 		r.done <- nil
-		go RabbitMQ()
 	}
 	defer cleanup()
 
 	var deliveryCount uint64 = 0
-
-	// Waiting message
 	for delivery := range r.deliveries {
 		if consumer.GetDebug() {
 			deliveryCount++
