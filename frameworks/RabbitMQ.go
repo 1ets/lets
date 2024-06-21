@@ -160,13 +160,13 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 		}
 
 		// Read reply to
-		var replyTo types.IReplyTo
+		var replyTo types.ReplyTo
 		if delivery.ReplyTo != "" {
 			if err := json.Unmarshal([]byte(delivery.ReplyTo), &replyTo); err != nil {
-				lets.LogE("RabbitMQ Server: %s", err.Error())
+				lets.LogE("RabbitMQ Server: ReplyTo Error: %s", err.Error())
 
 				if delivery.ReplyTo != "" {
-					lets.LogE("RabbitMQ Server: ReplyTo Value: %s", delivery.ReplyTo)
+					lets.LogE("RabbitMQ Server: Set routing key / queue: %s", delivery.ReplyTo)
 
 					replyTo.SetRoutingKey(delivery.ReplyTo)
 				}
@@ -177,7 +177,7 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 		event := types.Event{
 			Name:          body.GetEvent(),
 			Data:          body.GetData(),
-			ReplyTo:       replyTo,
+			ReplyTo:       &replyTo,
 			CorrelationId: delivery.CorrelationId,
 			Exchange:      delivery.Exchange,
 			RoutingKey:    delivery.RoutingKey,
