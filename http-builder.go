@@ -32,6 +32,13 @@ type HttpBuilder struct {
 	basic    basicAuth
 }
 
+type HttpBuilderOptions struct {
+	LogHeader      bool
+	LogMethod      bool
+	LogRequestBody bool
+	LogResponse    bool
+}
+
 // Set http client with default configuration.
 func (h *HttpBuilder) Default() {
 	defaultTransport := http.DefaultTransport.(*http.Transport)
@@ -89,7 +96,7 @@ func (h *HttpBuilder) AddHeader(name string, value string) {
 }
 
 // Post request.
-func (h *HttpBuilder) Post(endPoint string, body interface{}) (fullUrl, response string, err error) {
+func (h *HttpBuilder) Post(endPoint string, body interface{}, option HttpBuilderOptions) (fullUrl, response string, err error) {
 	fullUrl = fmt.Sprintf("%s%s", h.url, endPoint)
 
 	var payloadString string
@@ -107,10 +114,20 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}) (fullUrl, response
 
 	// Header Setup
 	for _, header := range h.headers {
-		LogI("HttpBuilder: SetHeader: %s: %s", header.Name, header.Value)
 		req.Header.Add(header.Name, header.Value)
+
+		if option.LogHeader {
+			LogI("HttpBuilder: SetHeader: %s: %s", header.Name, header.Value)
+		}
 	}
-	LogI("HttpBuilder: POST \"%s\" payload: \n%s\n", fullUrl, payloadString)
+
+	if option.LogMethod {
+		LogI("HttpBuilder: POST \"%s\"\n", fullUrl)
+	}
+
+	if option.LogRequestBody {
+		LogI("HttpBuilder: Payload/Body:\n%s\n", payloadString)
+	}
 
 	// Basic Auth
 	if h.basic.Username != "" {
@@ -130,14 +147,16 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}) (fullUrl, response
 
 	response = string(resBody)
 
-	LogI("HttpBuilder: Response Status: %v", h.response.StatusCode)
-	LogI("HttpBuilder: Response Body: %s\n\n", response)
+	if option.LogResponse {
+		LogI("HttpBuilder: Response Status: %v", h.response.StatusCode)
+		LogI("HttpBuilder: Response Body: %s\n\n", response)
+	}
 
 	return
 }
 
 // Get request.
-func (h *HttpBuilder) Get(endPoint string, body interface{}) (fullUrl, response string, err error) {
+func (h *HttpBuilder) Get(endPoint string, body interface{}, option HttpBuilderOptions) (fullUrl, response string, err error) {
 	fullUrl = fmt.Sprintf("%s%s", h.url, endPoint)
 
 	var payloadString string
@@ -156,10 +175,20 @@ func (h *HttpBuilder) Get(endPoint string, body interface{}) (fullUrl, response 
 
 	// Header Setup
 	for _, header := range h.headers {
-		LogI("HttpBuilder: SetHeader: %s: %s", header.Name, header.Value)
 		req.Header.Add(header.Name, header.Value)
+
+		if option.LogHeader {
+			LogI("HttpBuilder: SetHeader: %s: %s", header.Name, header.Value)
+		}
 	}
-	LogI("HttpBuilder: POST \"%s\"; Payload: \n%s\n", fullUrl, payloadString)
+
+	if option.LogMethod {
+		LogI("HttpBuilder: GET \"%s\"\n", fullUrl)
+	}
+
+	if option.LogRequestBody {
+		LogI("HttpBuilder: Payload/Body:\n%s\n", payloadString)
+	}
 
 	h.response, err = h.client.Do(req)
 	if err != nil {
@@ -173,8 +202,11 @@ func (h *HttpBuilder) Get(endPoint string, body interface{}) (fullUrl, response 
 	}
 
 	response = string(resBody)
-	LogI("HttpBuilder: Response Status: %v", h.response.StatusCode)
-	LogI("HttpBuilder: Response Body: %s\n\n", response)
+
+	if option.LogResponse {
+		LogI("HttpBuilder: Response Status: %v", h.response.StatusCode)
+		LogI("HttpBuilder: Response Body: %s\n\n", response)
+	}
 	return
 }
 
