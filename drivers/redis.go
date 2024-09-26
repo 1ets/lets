@@ -11,6 +11,7 @@ var RedisConfig types.IRedis
 
 type redisProvider struct {
 	dsn      string
+	username string
 	password string
 	database int
 	redis    *redis.Client
@@ -19,6 +20,7 @@ type redisProvider struct {
 func (m *redisProvider) Connect() {
 	m.redis = redis.NewClient(&redis.Options{
 		Addr:     m.dsn,
+		Username: m.username,
 		Password: m.password,
 		DB:       m.database,
 	})
@@ -34,6 +36,7 @@ func Redis() {
 
 	redis := redisProvider{
 		dsn:      RedisConfig.GetDsn(),
+		username: RedisConfig.GetUsername(),
 		password: RedisConfig.GetPassword(),
 		database: RedisConfig.GetDatabase(),
 	}

@@ -9,6 +9,7 @@ import (
 const (
 	REDIS_HOST     = "localhost"
 	REDIS_PORT     = "6379"
+	REDIS_USERNAME = "default"
 	REDIS_PASSWORD = ""
 	REDIS_DATABASE = 0
 )
@@ -16,6 +17,7 @@ const (
 type IRedis interface {
 	GetHost() string
 	GetPort() string
+	GetUsername() string
 	GetPassword() string
 	GetDatabase() int
 	GetDsn() string
@@ -26,6 +28,7 @@ type IRedis interface {
 type Redis struct {
 	Host         string
 	Port         string
+	Username     string
 	Password     string
 	Database     int
 	Debug        bool
@@ -48,6 +51,13 @@ func (r *Redis) GetPort() string {
 	return r.Port
 }
 
+func (r *Redis) GetUsername() string {
+	if r.Username == "" {
+		lets.LogW("Configs Redis: REDIS_USERNAME is not set in .env file, using default configuration.")
+		return REDIS_USERNAME
+	}
+	return r.Password
+}
 func (r *Redis) GetPassword() string {
 	if r.Password == "" {
 		lets.LogW("Configs Redis: REDIS_PASSWORD is not set in .env file, using default configuration.")
