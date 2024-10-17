@@ -80,8 +80,6 @@ func (h *HttpBuilder) SetBasicAuth(username, password string) {
 
 // Setting up header name and value.
 func (h *HttpBuilder) AddHeader(name string, value string) {
-	// LogD("HttpBuilder: add header \"%s\":\"%s\"", name, value)
-
 	for _, header := range h.headers {
 		if header.Name == name {
 			header.Value = value
@@ -106,6 +104,10 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}, option HttpBuilder
 		payloadString = ToJson(body)
 	}
 
+	if option.LogMethod {
+		LogI("HttpBuilder: POST \"%s\"\n", fullUrl)
+	}
+
 	payload := strings.NewReader(payloadString)
 	req, err := http.NewRequest(http.MethodPost, fullUrl, payload)
 	if err != nil {
@@ -121,12 +123,8 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}, option HttpBuilder
 		}
 	}
 
-	if option.LogMethod {
-		LogI("HttpBuilder: POST \"%s\"\n", fullUrl)
-	}
-
 	if option.LogRequestBody {
-		LogI("HttpBuilder: Payload/Body:\n%s\n", payloadString)
+		LogI("HttpBuilder: Body:\n%s\n", payloadString)
 	}
 
 	// Basic Auth
@@ -167,7 +165,10 @@ func (h *HttpBuilder) Get(endPoint string, body interface{}, option HttpBuilderO
 		payloadString = v.Encode()
 	}
 
-	// payload := strings.NewReader(payloadString)
+	if option.LogMethod {
+		LogI("HttpBuilder: GET \"%s\"\n", fullUrl)
+	}
+
 	req, err := http.NewRequest(http.MethodGet, fullUrl+"?"+payloadString, &strings.Reader{})
 	if err != nil {
 		return
@@ -182,12 +183,8 @@ func (h *HttpBuilder) Get(endPoint string, body interface{}, option HttpBuilderO
 		}
 	}
 
-	if option.LogMethod {
-		LogI("HttpBuilder: GET \"%s\"\n", fullUrl)
-	}
-
 	if option.LogRequestBody {
-		LogI("HttpBuilder: Payload/Body:\n%s\n", payloadString)
+		LogI("HttpBuilder: Query:\n%s\n", payloadString)
 	}
 
 	h.response, err = h.client.Do(req)
