@@ -26,6 +26,7 @@ type grpcServer struct {
 // Internal function for initialize gRPC server
 func (g *grpcServer) init(config types.IGrpcServer) {
 	g.dsn = fmt.Sprintf(":%s", config.GetPort())
+	g.opts = config.GetServerOptions()
 	g.engine = grpc.NewServer(g.opts...)
 	g.router = config.GetRouter()
 }

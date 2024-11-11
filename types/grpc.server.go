@@ -15,12 +15,14 @@ const (
 type IGrpcServer interface {
 	GetPort() string
 	GetRouter() func(*grpc.Server)
+	GetServerOptions() []grpc.ServerOption
 }
 
 // Server information
 type GrpcServer struct {
-	Port   string
-	Router func(*grpc.Server)
+	Port          string
+	Router        func(*grpc.Server)
+	ServerOptions []grpc.ServerOption
 }
 
 // Get Port
@@ -37,4 +39,9 @@ func (g *GrpcServer) GetPort() string {
 // Get Router
 func (g *GrpcServer) GetRouter() func(*grpc.Server) {
 	return g.Router
+}
+
+// Get Router
+func (g *GrpcServer) GetServerOptions() []grpc.ServerOption {
+	return g.ServerOptions
 }
