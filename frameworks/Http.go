@@ -6,6 +6,7 @@ import (
 
 	"github.com/1ets/lets"
 	"github.com/1ets/lets/types"
+	"github.com/gin-contrib/gzip"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +20,7 @@ type httpServer struct {
 	engine     *gin.Engine
 	middleware func(*gin.Engine)
 	router     func(*gin.Engine)
+	gzip       bool
 }
 
 // Initialize service
@@ -29,6 +31,7 @@ func (http *httpServer) init() {
 	http.engine = gin.New()
 	http.middleware = HttpConfig.GetMiddleware()
 	http.router = HttpConfig.GetRouter()
+	http.gzip = HttpConfig.GetGzip()
 
 	var defaultLogFormatter = func(param gin.LogFormatterParams) string {
 		var statusColor, methodColor, resetColor string
@@ -55,6 +58,11 @@ func (http *httpServer) init() {
 	}
 
 	http.engine.Use(gin.LoggerWithFormatter(defaultLogFormatter))
+
+	// Implement GZip Features
+	if http.gzip {
+		http.engine.Use(gzip.Gzip(gzip.DefaultCompression))
+	}
 }
 
 // Run service

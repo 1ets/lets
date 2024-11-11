@@ -18,6 +18,7 @@ type IHttpServer interface {
 	GetMode() string
 	GetMiddleware() func(*gin.Engine)
 	GetRouter() func(*gin.Engine)
+	GetGzip() bool
 }
 
 // Serve information
@@ -26,6 +27,7 @@ type HttpServer struct {
 	Mode       string
 	Middleware func(*gin.Engine)
 	Router     func(*gin.Engine)
+	Gzip       bool
 }
 
 // Get Port
@@ -58,4 +60,9 @@ func (hs *HttpServer) GetMiddleware() func(*gin.Engine) {
 // Get Router
 func (hs *HttpServer) GetRouter() func(*gin.Engine) {
 	return hs.Router
+}
+
+// Get Gzip
+func (hs *HttpServer) GetGzip() bool {
+	return hs.Gzip
 }
