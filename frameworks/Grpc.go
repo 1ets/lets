@@ -18,7 +18,6 @@ var GrpcConfig types.IGrpcConfig
 // gRPC Server
 type grpcServer struct {
 	dsn    string
-	opts   []grpc.ServerOption
 	engine *grpc.Server
 	router func(*grpc.Server)
 }
@@ -26,8 +25,7 @@ type grpcServer struct {
 // Internal function for initialize gRPC server
 func (g *grpcServer) init(config types.IGrpcServer) {
 	g.dsn = fmt.Sprintf(":%s", config.GetPort())
-	g.opts = config.GetServerOptions()
-	g.engine = grpc.NewServer(g.opts...)
+	g.engine = grpc.NewServer(config.GetServerOptions()...)
 	g.router = config.GetRouter()
 }
 
@@ -42,18 +40,25 @@ func (rpc *grpcServer) serve() {
 }
 
 type grpcClient struct {
-	name   string
-	dsn    string
-	engine *grpc.ClientConn
+	name    string
+	dsn     string
+	options []grpc.DialOption
+	engine  *grpc.ClientConn
 }
 
 func (rpc *grpcClient) init(config types.IGrpcClient) {
 	rpc.name = config.GetName()
 	rpc.dsn = fmt.Sprintf("%s:%s", config.GetHost(), config.GetPort())
+	rpc.options = config.GetClientOptions()
 }
 
 func (rpc *grpcClient) connect() (err error) {
-	rpc.engine, err = grpc.Dial(rpc.dsn, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	opts := append(rpc.options, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	rpc.engine, err = grpc.NewClient(rpc.dsn, opts...)
+
+	// defer rpc.engine.Close()
+
 	return
 }
 

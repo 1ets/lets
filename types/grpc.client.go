@@ -2,6 +2,7 @@ package types
 
 import (
 	"github.com/1ets/lets"
+	"google.golang.org/grpc"
 )
 
 // Default grpc configuration
@@ -16,15 +17,17 @@ type IGrpcClient interface {
 	GetName() string
 	GetHost() string
 	GetPort() string
+	GetClientOptions() []grpc.DialOption
 	GetClients() []IGrpcServiceClient
 }
 
 // Client information
 type GrpcClient struct {
-	Name    string
-	Host    string
-	Port    string
-	Clients []IGrpcServiceClient
+	Name          string
+	Host          string
+	Port          string
+	ClientOptions []grpc.DialOption
+	Clients       []IGrpcServiceClient
 }
 
 // Get Name
@@ -63,4 +66,9 @@ func (gc *GrpcClient) GetPort() string {
 // Get Clients
 func (gc *GrpcClient) GetClients() []IGrpcServiceClient {
 	return gc.Clients
+}
+
+// Get Client Option
+func (gc *GrpcClient) GetClientOptions() []grpc.DialOption {
+	return gc.ClientOptions
 }
