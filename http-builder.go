@@ -101,13 +101,7 @@ func (h *HttpBuilder) AddHeader(name string, value string) {
 func (h *HttpBuilder) Post(endPoint string, body interface{}, option HttpBuilderOptions) (fullUrl, response string, err error) {
 	fullUrl = fmt.Sprintf("%s%s", h.url, endPoint)
 
-	LogD(reflect.TypeOf(body).String())
-
-	thingType := reflect.TypeOf(body)
-	fmt.Println(thingType) // main.Thing
-
 	var payload io.Reader
-
 	if reflect.TypeOf(body) == reflect.TypeOf([]byte(nil)) {
 		payload = strings.NewReader(string(body.([]byte)))
 	} else if reflect.TypeOf(body) == reflect.PointerTo(reflect.TypeOf(bytes.Buffer{})) {
@@ -118,6 +112,11 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}, option HttpBuilder
 
 	if option.LogMethod {
 		LogI("HttpBuilder: POST \"%s\"\n", fullUrl)
+	}
+
+	if option.LogRequestBody {
+		body, _ := io.ReadAll(payload)
+		LogI("HttpBuilder: Body:\n%s\n", string(body))
 	}
 
 	req, err := http.NewRequest(http.MethodPost, fullUrl, payload)
@@ -132,11 +131,6 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}, option HttpBuilder
 		if option.LogHeader {
 			LogI("HttpBuilder: SetHeader: %s: %s", header.Name, header.Value)
 		}
-	}
-
-	if option.LogRequestBody {
-		body, _ := io.ReadAll(payload)
-		LogI("HttpBuilder: Body:\n%s\n", string(body))
 	}
 
 	// Basic Auth
