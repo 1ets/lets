@@ -114,11 +114,6 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}, option HttpBuilder
 		LogI("HttpBuilder: POST \"%s\"\n", fullUrl)
 	}
 
-	if option.LogRequestBody {
-		body, _ := io.ReadAll(payload)
-		LogI("HttpBuilder: Body:\n%s\n", string(body))
-	}
-
 	req, err := http.NewRequest(http.MethodPost, fullUrl, payload)
 	if err != nil {
 		return
@@ -131,6 +126,11 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}, option HttpBuilder
 		if option.LogHeader {
 			LogI("HttpBuilder: SetHeader: %s: %s", header.Name, header.Value)
 		}
+	}
+
+	if option.LogRequestBody {
+		body, _ := io.ReadAll(payload)
+		LogI("HttpBuilder: Body:\n%s\n", string(body))
 	}
 
 	// Basic Auth
@@ -160,22 +160,32 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}, option HttpBuilder
 }
 
 // Get request.
-func (h *HttpBuilder) Get(endPoint string, body interface{}, option HttpBuilderOptions) (fullUrl, response string, err error) {
+func (h *HttpBuilder) Get(endPoint string, urlQuery interface{}, body interface{}, option HttpBuilderOptions) (fullUrl, response string, err error) {
 	fullUrl = fmt.Sprintf("%s%s", h.url, endPoint)
 
-	var payloadString string
+	// Process Query
+	if reflect.TypeOf(urlQuery) == reflect.TypeOf([]byte(nil)) {
+		fullUrl = fmt.Sprintf("%s?%s", fullUrl, string(urlQuery.([]byte)))
+	} else if urlQuery != nil {
+		v, _ := query.Values(urlQuery)
+		fullUrl = fmt.Sprintf("%s?%s", fullUrl, v.Encode())
+	}
+
+	// Process Body
+	var payload io.Reader
 	if reflect.TypeOf(body) == reflect.TypeOf([]byte(nil)) {
-		payloadString = string(body.([]byte))
+		payload = strings.NewReader(string(body.([]byte)))
+	} else if reflect.TypeOf(body) == reflect.PointerTo(reflect.TypeOf(bytes.Buffer{})) {
+		payload = body.(*bytes.Buffer)
 	} else {
-		v, _ := query.Values(body)
-		payloadString = v.Encode()
+		payload = strings.NewReader(ToJson(body))
 	}
 
 	if option.LogMethod {
 		LogI("HttpBuilder: GET \"%s\"\n", fullUrl)
 	}
 
-	req, err := http.NewRequest(http.MethodGet, fullUrl+"?"+payloadString, &strings.Reader{})
+	req, err := http.NewRequest(http.MethodGet, fullUrl, payload)
 	if err != nil {
 		return
 	}
@@ -190,7 +200,8 @@ func (h *HttpBuilder) Get(endPoint string, body interface{}, option HttpBuilderO
 	}
 
 	if option.LogRequestBody {
-		LogI("HttpBuilder: Query:\n%s\n", payloadString)
+		body, _ := io.ReadAll(payload)
+		LogI("HttpBuilder: Body:\n%s\n", string(body))
 	}
 
 	h.response, err = h.client.Do(req)
