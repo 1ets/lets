@@ -1,6 +1,7 @@
 package lets
 
 import (
+	"bytes"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -25,11 +26,12 @@ type basicAuth struct {
 
 // Type for saving oy builder params.
 type HttpBuilder struct {
-	url      string
-	client   *http.Client
-	headers  []*httpHeader
-	response *http.Response
-	basic    basicAuth
+	url       string
+	client    *http.Client
+	headers   []*httpHeader
+	response  *http.Response
+	basic     basicAuth
+	multipart bool
 }
 
 type HttpBuilderOptions struct {
@@ -60,6 +62,10 @@ func (h *HttpBuilder) Default() {
 	}
 }
 
+func (h *HttpBuilder) MultipartEnable() {
+	h.multipart = true
+}
+
 // Manual set http builder.
 func (h *HttpBuilder) SetClient(client *http.Client) {
 	h.client = client
@@ -67,8 +73,6 @@ func (h *HttpBuilder) SetClient(client *http.Client) {
 
 // Set End Point
 func (h *HttpBuilder) SetUrl(url string) {
-	// LogD("HttpBuilder: set endPoint to \"%s\"", url)
-
 	h.url = url
 }
 
@@ -97,18 +101,25 @@ func (h *HttpBuilder) AddHeader(name string, value string) {
 func (h *HttpBuilder) Post(endPoint string, body interface{}, option HttpBuilderOptions) (fullUrl, response string, err error) {
 	fullUrl = fmt.Sprintf("%s%s", h.url, endPoint)
 
-	var payloadString string
+	LogD(reflect.TypeOf(body).String())
+
+	thingType := reflect.TypeOf(body)
+	fmt.Println(thingType) // main.Thing
+
+	var payload io.Reader
+
 	if reflect.TypeOf(body) == reflect.TypeOf([]byte(nil)) {
-		payloadString = string(body.([]byte))
+		payload = strings.NewReader(string(body.([]byte)))
+	} else if reflect.TypeOf(body) == reflect.PointerTo(reflect.TypeOf(bytes.Buffer{})) {
+		payload = body.(*bytes.Buffer)
 	} else {
-		payloadString = ToJson(body)
+		payload = strings.NewReader(ToJson(body))
 	}
 
 	if option.LogMethod {
 		LogI("HttpBuilder: POST \"%s\"\n", fullUrl)
 	}
 
-	payload := strings.NewReader(payloadString)
 	req, err := http.NewRequest(http.MethodPost, fullUrl, payload)
 	if err != nil {
 		return
@@ -124,7 +135,8 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}, option HttpBuilder
 	}
 
 	if option.LogRequestBody {
-		LogI("HttpBuilder: Body:\n%s\n", payloadString)
+		body, _ := io.ReadAll(payload)
+		LogI("HttpBuilder: Body:\n%s\n", string(body))
 	}
 
 	// Basic Auth
