@@ -16,6 +16,7 @@ require (
 	github.com/kataras/pio v0.0.13
 	github.com/rabbitmq/amqp091-go v1.10.0
 	go.mongodb.org/mongo-driver v1.17.0
+	golang.org/x/term v0.26.0
 	google.golang.org/grpc v1.68.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.12

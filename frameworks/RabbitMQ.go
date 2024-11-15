@@ -143,9 +143,6 @@ func (r *rabbitConsumer) consume(server *rabbitServer, consumer types.IRabbitMQC
 func (r *rabbitConsumer) listenMessage(server *rabbitServer, consumer types.IRabbitMQConsumer) {
 	cleanup := func() {
 		lets.LogE("RabbitMQ Server DC: %s", "Delivery channel is closed.")
-		// go RabbitMQ()
-
-		// r.consume(server, consumer)
 		r.listenMessage(server, consumer)
 
 		r.done <- nil

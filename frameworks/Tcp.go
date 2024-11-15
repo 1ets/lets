@@ -47,7 +47,7 @@ func (tcp *tcpServer) init(config types.ITcpServer) {
 			param.Latency = param.Latency.Truncate(time.Second)
 		}
 
-		return fmt.Sprintf("%s[HTTP]%s %v |%s %3d %s| %13v | %15s |%s %-7s %s %#v\n%s",
+		return fmt.Sprintf("%s[TCP]%s %v |%s %3d %s| %13v | %15s |%s %-7s %s %#v\n%s",
 			"\x1b[32m", resetColor,
 			param.TimeStamp.Format("2006-01-02 15:04:05"),
 			statusColor, param.StatusCode, resetColor,
@@ -125,7 +125,7 @@ func (tcp *tcpClient) init(config types.ITcpClient) {
 			param.Latency = param.Latency.Truncate(time.Second)
 		}
 
-		return fmt.Sprintf("%s[HTTP]%s %v |%s %3d %s| %13v | %15s |%s %-7s %s %#v\n%s",
+		return fmt.Sprintf("%s[TCP]%s %v |%s %3d %s| %13v | %15s |%s %-7s %s %#v\n%s",
 			"\x1b[32m", resetColor,
 			param.TimeStamp.Format("2006-01-02 15:04:05"),
 			statusColor, param.StatusCode, resetColor,

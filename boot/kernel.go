@@ -1,7 +1,6 @@
 package boot
 
 import (
-	"github.com/1ets/lets"
 	"github.com/1ets/lets/drivers"
 	"github.com/1ets/lets/frameworks"
 	"github.com/1ets/lets/loader"
@@ -11,7 +10,6 @@ import (
 var Initializer = []func(){
 	loader.Environment,
 	loader.Logger,
-	loader.Launching,
 }
 
 // List of framework that start on lets
@@ -33,15 +31,14 @@ func AddInitializer(init func()) {
 
 // Bootstrap vars and configuration
 func OnInit() {
+	Initializer = append(Initializer, loader.Launching)
 	for _, initializer := range Initializer {
-		// fmt.Printf("%v. Initializing %s\n", i, runtime.FuncForPC(reflect.ValueOf(initializer).Pointer()).Name())
 		initializer()
 	}
 }
 
 // Bootstrap frameworks
 func OnMain() {
-	lets.LogI("Booting ...")
 	for _, runner := range Servers {
 		go runner()
 	}
