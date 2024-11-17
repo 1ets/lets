@@ -172,13 +172,17 @@ func (h *HttpBuilder) Get(endPoint string, urlQuery interface{}, body interface{
 	}
 
 	// Process Body
+	fmt.Println(reflect.TypeOf(body))
+
 	var payload io.Reader
 	if reflect.TypeOf(body) == reflect.TypeOf([]byte(nil)) {
 		payload = strings.NewReader(string(body.([]byte)))
 	} else if reflect.TypeOf(body) == reflect.PointerTo(reflect.TypeOf(bytes.Buffer{})) {
 		payload = body.(*bytes.Buffer)
-	} else {
+	} else if reflect.TypeOf(body) == reflect.TypeOf(string("")) {
 		payload = strings.NewReader(ToJson(body))
+	} else {
+		payload = &strings.Reader{}
 	}
 
 	if option.LogMethod {
