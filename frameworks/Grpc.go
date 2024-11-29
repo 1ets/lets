@@ -55,8 +55,8 @@ func (rpc *grpcClient) init(config types.IGrpcClient) {
 func (rpc *grpcClient) connect() (err error) {
 	opts := append(rpc.options, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
-	// rpc.engine, err = grpc.NewClient(rpc.dsn, opts...)
-	rpc.engine, err = grpc.Dial(rpc.dsn, opts...)
+	rpc.engine, err = grpc.NewClient(rpc.dsn, opts...)
+	// rpc.engine, err = grpc.Dial(rpc.dsn, opts...)
 
 	// defer rpc.engine.Close()
 
