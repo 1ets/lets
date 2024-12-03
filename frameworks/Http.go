@@ -28,7 +28,10 @@ func (http *httpServer) init() {
 	gin.SetMode(HttpConfig.GetMode())
 
 	http.server = fmt.Sprintf(":%s", HttpConfig.GetPort())
+
 	http.engine = gin.New()
+	http.engine.SetTrustedProxies(nil)
+
 	http.middleware = HttpConfig.GetMiddleware()
 	http.router = HttpConfig.GetRouter()
 	http.gzip = HttpConfig.GetGzip()

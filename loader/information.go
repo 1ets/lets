@@ -15,7 +15,7 @@ func Launching() {
 	printer.init()
 
 	printer.hr()
-	printer.printTitle("Let's Go Framework", "Framework is maintened by github.com/dhutapratama")
+	printer.printTitle("Let's Go Framework", "Framework is maintained by github.com/dhutapratama")
 
 	if InfoIdentService != nil {
 		printer.printStruct(*InfoIdentService)

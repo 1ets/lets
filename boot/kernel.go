@@ -29,6 +29,11 @@ func AddInitializer(init func()) {
 	Initializer = append(Initializer, init)
 }
 
+// Add initialization function and run before application starting
+func AddServers(server func()) {
+	Servers = append(Servers, server)
+}
+
 // Bootstrap vars and configuration
 func OnInit() {
 	Initializer = append(Initializer, loader.Launching)

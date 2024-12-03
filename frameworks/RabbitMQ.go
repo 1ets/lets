@@ -39,7 +39,7 @@ func (r *rabbitServer) init(config types.IRabbitMQServer) {
 
 // Start consuming.
 func (r *rabbitServer) connect() {
-	lets.LogI("RabbitMQ: connecting ...")
+	// lets.LogI("RabbitMQ: connecting ...")
 
 	var err error
 	for {
