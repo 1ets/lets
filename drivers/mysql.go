@@ -16,33 +16,42 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 )
 
-var MySQLConfig types.IMySQL
+var MySQLConfig []types.IMySQL
 
 type mysqlProvider struct {
-	debug bool
-	DSN   string
-	Gorm  *gorm.DB
-	Sql   *sql.DB
+	// debug bool
+	// DSN   string
+	Gorm   *gorm.DB
+	Sql    *sql.DB
+	Config types.IMySQL
 }
 
 func (m *mysqlProvider) Connect() {
 	var logType logger.Interface = logger.Default.LogMode(logger.Warn)
-	if m.debug {
+	if m.Config.DebugMode() {
 		logType = logger.Default.LogMode(logger.Info)
 	}
 
 	var err error
 	m.Gorm, err = gorm.Open(mysql.New(mysql.Config{
-		DSN:                       m.DSN, // data source name
-		DefaultStringSize:         256,   // default size for string fields
-		DisableDatetimePrecision:  true,  // disable datetime precision, which not supported before MySQL 5.6
-		DontSupportRenameIndex:    true,  // drop & create when rename index, rename index not supported before MySQL 5.7, MariaDB
-		DontSupportRenameColumn:   true,  // `change` when rename column, rename column not supported before MySQL 8, MariaDB
-		SkipInitializeWithVersion: false, // auto configure based on currently MySQL configs
+		DSN:                       m.Config.GetDsn(), // data source name
+		DefaultStringSize:         256,               // default size for string fields
+		DisableDatetimePrecision:  true,              // disable datetime precision, which not supported before MySQL 5.6
+		DontSupportRenameIndex:    true,              // drop & create when rename index, rename index not supported before MySQL 5.7, MariaDB
+		DontSupportRenameColumn:   true,              // `change` when rename column, rename column not supported before MySQL 8, MariaDB
+		SkipInitializeWithVersion: false,             // auto configure based on currently MySQL configs
 	}), &gorm.Config{
-		Logger: logType,
+		Logger:      logType,
+		QueryFields: m.Config.GetQueryFields(),
+		NamingStrategy: schema.NamingStrategy{
+			NoLowerCase:   true,
+			SingularTable: true,
+		},
+		PrepareStmt:              true,
+		DisableNestedTransaction: m.Config.GetDisableNestedTransaction(),
 	})
 
 	if err != nil {
@@ -75,25 +84,28 @@ func MySQL() {
 
 	lets.LogI("MySQL Starting ...")
 
-	mySQL := mysqlProvider{
-		DSN:   MySQLConfig.GetDsn(),
-		debug: MySQLConfig.DebugMode(),
-	}
-	mySQL.Connect()
-
-	// Inject Gorm into repository
-	for _, repository := range MySQLConfig.GetRepositories() {
-		repository.SetDriver(mySQL.Gorm)
-	}
-
-	// Migration
-	if MySQLConfig.Migration() {
-		err := mySQL.Gorm.AutoMigrate(&migration{})
-		if err != nil {
-			lets.LogE("Unable to run migration %w", err)
-			return
+	for _, config := range MySQLConfig {
+		mySQL := mysqlProvider{
+			// DSN:    MySQLConfig.GetDsn(),
+			// debug:  MySQLConfig.DebugMode(),
+			Config: config,
 		}
-		Migrate(mySQL.Gorm, mySQL.Sql)
+		mySQL.Connect()
+
+		// Inject Gorm into repository
+		for _, repository := range config.GetRepositories() {
+			repository.SetDriver(mySQL.Gorm)
+		}
+
+		// Migration
+		if config.Migration() {
+			err := mySQL.Gorm.AutoMigrate(&migration{})
+			if err != nil {
+				lets.LogE("Unable to run migration %w", err)
+				return
+			}
+			Migrate(mySQL.Gorm, mySQL.Sql)
+		}
 	}
 }
 

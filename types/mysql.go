@@ -32,22 +32,26 @@ type IMySQL interface {
 	GetRepositories() []IMySQLRepository
 	GetDsn() string
 	Migration() bool
+	GetQueryFields() bool
+	GetDisableNestedTransaction() bool
 }
 
 type MySQL struct {
-	Host            string
-	Port            string
-	Username        string
-	Password        string
-	Database        string
-	Charset         string
-	ParseTime       string
-	Loc             string
-	Debug           bool
-	Gorm            *gorm.DB
-	DB              *sql.DB
-	Repositories    []IMySQLRepository
-	EnableMigration bool
+	Host                     string
+	Port                     string
+	Username                 string
+	Password                 string
+	Database                 string
+	Charset                  string
+	ParseTime                string
+	Loc                      string
+	Debug                    bool
+	Gorm                     *gorm.DB
+	DB                       *sql.DB
+	Repositories             []IMySQLRepository
+	EnableMigration          bool
+	QueryFields              bool
+	DisableNestedTransaction bool
 }
 
 func (mysql *MySQL) GetHost() string {
@@ -137,4 +141,12 @@ func (mysql *MySQL) GetDsn() string {
 
 func (mysql *MySQL) Migration() bool {
 	return mysql.EnableMigration
+}
+
+func (mysql *MySQL) GetQueryFields() bool {
+	return mysql.QueryFields
+}
+
+func (mysql *MySQL) GetDisableNestedTransaction() bool {
+	return mysql.DisableNestedTransaction
 }
