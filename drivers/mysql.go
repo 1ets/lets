@@ -73,7 +73,6 @@ func (m *mysqlProvider) Connect() {
 
 	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
 	m.Sql.SetConnMaxLifetime(time.Hour)
-
 }
 
 // Define MySQL service host and port

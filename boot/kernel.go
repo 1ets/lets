@@ -12,6 +12,9 @@ var Initializer = []func(){
 	loader.Logger,
 }
 
+// List of stop function
+var Stopper = []func(){}
+
 // List of framework that start on lets
 var Servers = []func(){
 	frameworks.Http,
@@ -34,6 +37,10 @@ func AddServers(server func()) {
 	Servers = append(Servers, server)
 }
 
+func AddStopper(stopper func()) {
+	Stopper = append(Stopper, stopper)
+}
+
 // Bootstrap vars and configuration
 func OnInit() {
 	Initializer = append(Initializer, loader.Launching)
@@ -49,4 +56,10 @@ func OnMain() {
 	}
 
 	loader.RunningForever()
+}
+
+func OnShutdown() {
+	for _, stop := range Stopper {
+		stop()
+	}
 }
