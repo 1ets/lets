@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -55,13 +54,17 @@ func (m *mysqlProvider) Connect() {
 	})
 
 	if err != nil {
-		log.Fatal(err.Error())
+		lets.LogE(err.Error())
+		time.Sleep(time.Second * 3)
+		m.Connect()
 		return
 	}
 
 	m.Sql, err = m.Gorm.DB()
 	if err != nil {
-		log.Fatal(err.Error())
+		time.Sleep(time.Second * 3)
+		m.Connect()
+
 		return
 	}
 
@@ -129,7 +132,10 @@ func Migrate(g *gorm.DB, db *sql.DB) {
 	// Get migration files
 	files, err := os.ReadDir("migrations")
 	if err != nil {
-		log.Fatal(err)
+		lets.LogE(err.Error())
+		time.Sleep(time.Second * 3)
+		Migrate(g, db)
+		return
 	}
 
 	for _, file := range files {
