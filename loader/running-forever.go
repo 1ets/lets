@@ -7,6 +7,9 @@ import (
 	"syscall"
 )
 
+// List of stop function
+var Stopper = []func(){}
+
 // Hold the thread for exitting
 func RunningForever() {
 	go gracefulShutdown()
@@ -23,8 +26,14 @@ func gracefulShutdown() {
 	signal.Notify(s, syscall.SIGTERM)
 	go func() {
 		<-s
-		fmt.Println("Sutting down gracefully.")
-		// clean up here
+		fmt.Println("Shutdown gracefully. ...zzZ")
+		OnShutdown()
 		os.Exit(0)
 	}()
+}
+
+func OnShutdown() {
+	for _, stop := range Stopper {
+		stop()
+	}
 }
