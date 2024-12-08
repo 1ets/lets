@@ -15,7 +15,7 @@ import (
 var HttpConfig types.IHttpServer
 
 // HTTP service struct
-type httpServer struct {
+type HttpServer struct {
 	server     string
 	engine     *gin.Engine
 	middleware func(*gin.Engine)
@@ -24,7 +24,7 @@ type httpServer struct {
 }
 
 // Initialize service
-func (http *httpServer) init() {
+func (http *HttpServer) init() {
 	gin.SetMode(HttpConfig.GetMode())
 
 	http.server = fmt.Sprintf(":%s", HttpConfig.GetPort())
@@ -69,8 +69,8 @@ func (http *httpServer) init() {
 }
 
 // Run service
-func (http *httpServer) serve() {
-	go func(http *httpServer) {
+func (http *HttpServer) serve() {
+	go func(http *HttpServer) {
 		err := http.engine.Run(http.server)
 		if err != nil {
 			lets.LogE(err.Error())
@@ -87,7 +87,7 @@ func Http() {
 
 	lets.LogI("HTTP Server Starting ...")
 
-	var http httpServer
+	var http HttpServer
 
 	http.init()
 	http.middleware(http.engine)

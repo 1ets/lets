@@ -24,10 +24,10 @@ type IHttpServer interface {
 // Serve information
 type HttpServer struct {
 	Port       string
-	Mode       string
 	Middleware func(*gin.Engine)
 	Router     func(*gin.Engine)
 	Gzip       bool
+	Mode       string
 }
 
 // Get Port

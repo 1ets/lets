@@ -1,10 +1,11 @@
 package loader
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/1ets/lets"
 )
 
 // List of stop function
@@ -18,7 +19,6 @@ func RunningForever() {
 	<-forever
 }
 
-// TODO: Create stopper
 // TODO: Fatal handling
 func gracefulShutdown() {
 	s := make(chan os.Signal, 1)
@@ -26,7 +26,8 @@ func gracefulShutdown() {
 	signal.Notify(s, syscall.SIGTERM)
 	go func() {
 		<-s
-		fmt.Println("Shutdown gracefully. ...zzZ")
+		lets.LogD("Shutdown gracefully. ...zzZ")
+
 		OnShutdown()
 		os.Exit(0)
 	}()

@@ -8,7 +8,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/1ets/lets"
+	"github.com/1ets/lets/drivers"
+	"github.com/1ets/lets/frameworks"
 )
 
 func Launching() {
@@ -29,6 +30,7 @@ func Launching() {
 	}
 
 	if InfoNetwork != nil {
+		printer.printHeading("Network")
 		printer.printStruct(*InfoNetwork)
 	}
 
@@ -36,25 +38,68 @@ func Launching() {
 		printer.printStruct(*InfoReplica)
 	}
 
-	// printer.printData("Microservice Name", "Dhuta Pratama")
-	// printer.printData("Description", "Dhuta Pratama")
-	// printer.printData("Service code/dns/module name", "Dhuta Pratama")
-	// printer.printData("Microservice Layer", "Dhuta Pratama")
-	// printer.printData("Owner/Author", "Dhuta Pratama (dhutapratama@gmail.com)")
-	// printer.hr()
-	// printer.printData("Repository", "Dhuta Pratama")
-	// printer.printData("Documentation", "Dhuta Pratama")
-	// printer.hr()
-	// printer.printData("Environment", "Dhuta Pratama")
-	// printer.printData("Debug", "Dhuta Pratama")
-	// printer.hr()
+	// Drivers
+	if clients := drivers.MySQLConfig; clients != nil {
+		for _, client := range clients {
+			printer.printHeading("MySQL / MariaDB Clients")
+			printer.printStruct(client)
+		}
+	}
 
-	// printer.printHeading("HTTP Server")
-	// // printer.printHeading("GIN - github.com/gin/gin")
-	// printer.hr2()
-	// printer.printData("Port", "80")
-	// printer.printData("Paths", "")
-	// printer.hr()
+	if drivers.RedisConfig != nil {
+		printer.printHeading("Redis Client")
+		printer.printStruct(drivers.RedisConfig)
+	}
+	if drivers.MongoDBConfig != nil {
+		printer.printHeading("MongoDB Client")
+		printer.printStruct(drivers.MongoDBConfig)
+	}
+
+	// Server / Client / Protovol
+	if frameworks.HttpConfig != nil {
+		printer.printHeading("HTTP Server")
+		printer.printStruct(frameworks.HttpConfig)
+	}
+
+	if conf := frameworks.GrpcConfig; conf != nil {
+		if conf.GetServer() != nil {
+			printer.printHeading("gRPC Server")
+			printer.printStruct(conf.GetServer())
+		}
+		if clients := conf.GetClients(); clients != nil {
+			if len(clients) > 0 {
+				printer.printHeading("gRPC Clients")
+				for _, client := range clients {
+					printer.printStruct(client)
+				}
+			}
+		}
+	}
+
+	if frameworks.RabbitMQConfig != nil {
+		if servers := frameworks.RabbitMQConfig.GetServers(); servers != nil {
+			printer.printHeading("RabbitMQ Servers")
+
+			for _, server := range servers {
+				printer.printStruct(server)
+
+				if publishers := server.GetPublishers(); publishers != nil {
+					for _, publisher := range publishers {
+						printer.printHeading("RabbitMQ Publisher")
+						printer.printStruct(publisher)
+					}
+				}
+
+				if consumers := server.GetConsumers(); consumers != nil {
+					for _, consumer := range consumers {
+						printer.printHeading("RabbitMQ Consumers")
+						printer.printStruct(consumer)
+					}
+				}
+
+			}
+		}
+	}
 }
 
 type launcher struct {
@@ -96,15 +141,27 @@ func (l *launcher) printHeading(title string) {
 }
 
 func (l *launcher) printData(field string, value any) {
-	var format = "// %-30s : %-61s //\n"
 
-	fmt.Fprintf(l.writer, format, field, value)
+	switch reflect.TypeOf(value).Kind() {
+	case reflect.String:
+		var format = "// %-30s : %-61s //\n"
+		fmt.Fprintf(l.writer, format, field, value)
+	case reflect.Bool:
+		var format = "// %-30s : %-61t //\n"
+		fmt.Fprintf(l.writer, format, field, value)
+	}
 }
 
 func (l *launcher) printStruct(info any) {
 	rt := reflect.TypeOf(info)
+	if rt.Kind() == reflect.Pointer {
+		data := reflect.ValueOf(info).Elem().Interface()
+		l.printStruct(data)
+		return
+	}
+
 	if rt.Kind() != reflect.Struct {
-		panic("bad type")
+		panic("bad type" + rt.Kind().String())
 	}
 
 	v := reflect.ValueOf(info)
@@ -129,7 +186,7 @@ func (l *launcher) printStruct(info any) {
 					l.printData(name, val.String())
 				}
 			} else {
-				lets.LogD("Unknown Type: %s", f.Type.String())
+				// lets.LogD("Unknown Type: %s", f.Type.String())
 			}
 		} else {
 			if v.Field(i).Interface() != "" {
