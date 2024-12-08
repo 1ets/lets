@@ -49,7 +49,7 @@ func (m *mysqlProvider) Connect() {
 			NoLowerCase:   true,
 			SingularTable: true,
 		},
-		PrepareStmt:              true,
+		PrepareStmt:              false,
 		DisableNestedTransaction: m.Config.GetDisableNestedTransaction(),
 	})
 
