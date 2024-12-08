@@ -63,38 +63,40 @@ func (tcp *tcpServer) init(config types.ITcpServer) {
 }
 
 // Run service
-func (tcp *tcpServer) serve() (err error) {
-	lets.LogI("TCP Server: Listening on %s", tcp.server)
+func (tcp *tcpServer) serve() {
+	go func(tcp *tcpServer) {
+		lets.LogI("TCP Server: Listening on %s", tcp.server)
 
-	for {
-		// Accept incoming connection
-		if connection, err := tcp.engine.Accept(); err != nil {
-			lets.LogE("TCP Client: %v", err)
+		for {
+			// Accept incoming connection
+			if connection, err := tcp.engine.Accept(); err != nil {
+				lets.LogE("TCP Client: %v", err)
 
-			continue
-		} else {
-			lets.LogI("TCP Client: connected: %v", connection.RemoteAddr().String())
-			tcp.handler.OnConnect()
+				continue
+			} else {
+				lets.LogI("TCP Client: connected: %v", connection.RemoteAddr().String())
+				tcp.handler.OnConnect()
+				tcp.pool = append(tcp.pool, connection)
 
-			tcp.pool = append(tcp.pool, connection)
+				// Handle every accepted connection so can used by multiple client
+				go func(conn net.Conn, onDisconnect func()) {
+					defer conn.Close()
+					buf := make([]byte, 1024)
 
-			// Handle every accepted connection so can used by multiple client
-			go func(conn net.Conn, onDisconnect func()) {
-				defer conn.Close()
-				buf := make([]byte, 1024)
-
-				for {
-					if i, err := conn.Read(buf); err != nil {
-						lets.LogE("TCP Server: %v", err)
-						onDisconnect()
-						break
-					} else if i > 0 {
-						lets.LogW("TCP Server: Unexpected data: %s", buf[:i])
+					for {
+						if i, err := conn.Read(buf); err != nil {
+							lets.LogE("TCP Server: %v", err)
+							onDisconnect()
+							break
+						} else if i > 0 {
+							lets.LogW("TCP Server: Unexpected data: %s", buf[:i])
+						}
 					}
-				}
-			}(connection, tcp.handler.OnDisconnect)
+				}(connection, tcp.handler.OnDisconnect)
+			}
 		}
-	}
+	}(tcp)
+
 }
 
 // TCP service struct
@@ -198,17 +200,7 @@ func Tcp() {
 			var server tcpServer
 			server.init(config)
 
-			go func(server tcpServer) {
-				for {
-					if err := server.serve(); err != nil {
-						lets.LogE("TCP Server: %s", err.Error())
-					}
-
-					// Auto listen in 10 seconds
-					time.Sleep(time.Second * 10)
-					lets.LogI("TCP Client: Restarting %s ...", server.server)
-				}
-			}(server)
+			server.serve()
 		}
 	}
 

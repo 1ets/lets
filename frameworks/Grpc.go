@@ -36,7 +36,7 @@ func (rpc *grpcServer) serve() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	rpc.engine.Serve(listener)
+	go rpc.engine.Serve(listener)
 }
 
 type grpcClient struct {
@@ -54,12 +54,7 @@ func (rpc *grpcClient) init(config types.IGrpcClient) {
 
 func (rpc *grpcClient) connect() (err error) {
 	opts := append(rpc.options, grpc.WithTransportCredentials(insecure.NewCredentials()))
-
 	rpc.engine, err = grpc.NewClient(rpc.dsn, opts...)
-	// rpc.engine, err = grpc.Dial(rpc.dsn, opts...)
-
-	// defer rpc.engine.Close()
-
 	return
 }
 
@@ -76,7 +71,7 @@ func Grpc() {
 		var rpcServer grpcServer
 		rpcServer.init(config)
 		rpcServer.router(rpcServer.engine)
-		go rpcServer.serve()
+		rpcServer.serve()
 	}
 
 	// Running gRPC client

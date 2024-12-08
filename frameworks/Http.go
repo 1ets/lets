@@ -70,7 +70,13 @@ func (http *httpServer) init() {
 
 // Run service
 func (http *httpServer) serve() {
-	http.engine.Run(http.server)
+	go func(http *httpServer) {
+		err := http.engine.Run(http.server)
+		if err != nil {
+			lets.LogE(err.Error())
+		}
+		http.serve()
+	}(http)
 }
 
 // Start http service

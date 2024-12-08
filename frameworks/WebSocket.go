@@ -65,7 +65,7 @@ func (ws *webSocketServer) setupRoutes() {
 
 // Run service
 func (ws *webSocketServer) serve() {
-	ws.engine.Run(ws.server)
+	go ws.engine.Run(ws.server)
 }
 
 // Start WebSocket service
