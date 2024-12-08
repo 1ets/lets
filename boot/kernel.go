@@ -10,6 +10,8 @@ import (
 var Initializer = []func(){
 	loader.Environment,
 	loader.Logger,
+	loader.Network,
+	loader.Replica,
 }
 
 // List of framework that start on lets

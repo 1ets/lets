@@ -1,5 +1,7 @@
 package types
 
+import "net"
+
 // Serve information
 type IdentityService struct {
 	Name        string
@@ -12,4 +14,16 @@ type IdentityService struct {
 type IdentitySource struct {
 	Repository    string `desc:"Repository URL"`
 	Documentation string `desc:"Documentation URL"`
+}
+
+type IdentityNetwork struct {
+	Hostname     []string `desc:"Hostname"`
+	IPV4         []net.IP `desc:"IPV4 Address"`
+	IPV6         []net.IP `desc:"IPV6 Address"`
+	NetInterface []string `desc:"Network Interface"`
+}
+
+type Replica struct {
+	IPV4 []net.IP `desc:"Replica IPV4 Address"`
+	IPV6 []net.IP `desc:"Replica IPV6 Address"`
 }

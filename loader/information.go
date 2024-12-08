@@ -3,9 +3,12 @@ package loader
 import (
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"reflect"
 	"strings"
+
+	"github.com/1ets/lets"
 )
 
 func Launching() {
@@ -23,6 +26,14 @@ func Launching() {
 
 	if InfoIdentSource != nil {
 		printer.printStruct(*InfoIdentSource)
+	}
+
+	if InfoNetwork != nil {
+		printer.printStruct(*InfoNetwork)
+	}
+
+	if InfoReplica != nil {
+		printer.printStruct(*InfoReplica)
 	}
 
 	// printer.printData("Microservice Name", "Dhuta Pratama")
@@ -105,9 +116,31 @@ func (l *launcher) printStruct(info any) {
 			name = strings.Split(f.Tag.Get("desc"), ",")[0]
 		}
 
-		if v.Field(i).Interface() != "" {
-			l.printData(name, v.Field(i).Interface())
+		if f.Type.Kind() == reflect.Slice {
+
+			if f.Type.String() == "[]string" {
+				vals := v.Field(i).Interface().([]string)
+				for _, val := range vals {
+					l.printData(name, val)
+				}
+			} else if f.Type.String() == "[]net.IP" {
+				vals := v.Field(i).Interface().([]net.IP)
+				for _, val := range vals {
+					l.printData(name, val.String())
+				}
+			} else {
+				lets.LogD("Unknown Type: %s", f.Type.String())
+			}
+		} else {
+			if v.Field(i).Interface() != "" {
+				l.printData(name, v.Field(i).Interface())
+			}
 		}
+
+		// switch reflect.TypeOf(i).Kind() {
+		// case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+		// 	return reflect.ValueOf(i).IsNil()
+		// }
 	}
 	l.hr()
 }
