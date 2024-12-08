@@ -24,13 +24,7 @@ func (m *mongodbProvider) Connect() {
 	clientOptions.ApplyURI(m.dsn)
 
 	var err error
-	m.mongodb, err = mongo.NewClient(clientOptions)
-	if err != nil {
-		lets.LogE("MongoDB: %v", err)
-		return
-	}
-
-	err = m.mongodb.Connect(context.Background())
+	m.mongodb, err = mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
 		lets.LogE("MongoDB: %v", err)
 		return
@@ -45,7 +39,7 @@ func MongoDB() {
 		return
 	}
 
-	lets.LogI("MongoDB Starting ...")
+	lets.LogI("MongoDB Client Starting ...")
 
 	mongodb := mongodbProvider{
 		dsn:      MongoDBConfig.GetDsn(),

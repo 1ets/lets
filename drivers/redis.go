@@ -32,7 +32,7 @@ func Redis() {
 		return
 	}
 
-	lets.LogI("Redis Starting ...")
+	lets.LogI("Redis Client Starting ...")
 
 	redis := redisProvider{
 		dsn:      RedisConfig.GetDsn(),

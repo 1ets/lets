@@ -57,6 +57,7 @@ func (m *mysqlProvider) Connect() {
 		lets.LogE(err.Error())
 		time.Sleep(time.Second * 3)
 		m.Connect()
+
 		return
 	}
 
@@ -84,12 +85,10 @@ func MySQL() {
 		return
 	}
 
-	lets.LogI("MySQL Starting ...")
+	lets.LogI("MySQL Client Starting ...")
 
 	for _, config := range MySQLConfig {
 		mySQL := mysqlProvider{
-			// DSN:    MySQLConfig.GetDsn(),
-			// debug:  MySQLConfig.DebugMode(),
 			Config: config,
 		}
 		mySQL.Connect()
