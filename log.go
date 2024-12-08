@@ -13,3 +13,20 @@ var (
 	LogF = Log.Fatalf
 	Logf = Log.Logf
 )
+
+// Log JSON
+func LogJ(arg interface{}) {
+	data := ToJson(arg)
+	LogD("%s", data)
+}
+
+// Log as JSON with Indent
+func LogJI(arg interface{}) {
+	data := ToJsonIndent(arg)
+	LogD("%s", data)
+}
+
+// Log Error
+func LogErr(err error) {
+	Log.Error(err)
+}
