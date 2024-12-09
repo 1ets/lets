@@ -101,13 +101,17 @@ func (h *HttpBuilder) AddHeader(name string, value string) {
 func (h *HttpBuilder) Post(endPoint string, body interface{}, option HttpBuilderOptions) (fullUrl, response string, err error) {
 	fullUrl = fmt.Sprintf("%s%s", h.url, endPoint)
 
-	var payload io.Reader
-	if reflect.TypeOf(body) == reflect.TypeOf([]byte(nil)) {
+	var payload, payloadDebug io.Reader
+
+	if reflect.TypeOf(body) == reflect.TypeOf([]byte{}) {
 		payload = strings.NewReader(string(body.([]byte)))
+		payloadDebug = strings.NewReader(string(body.([]byte)))
 	} else if reflect.TypeOf(body) == reflect.PointerTo(reflect.TypeOf(bytes.Buffer{})) {
 		payload = body.(*bytes.Buffer)
+		payloadDebug = body.(*bytes.Buffer)
 	} else {
 		payload = strings.NewReader(ToJson(body))
+		payloadDebug = strings.NewReader(ToJson(body))
 	}
 
 	if option.LogMethod {
@@ -129,8 +133,17 @@ func (h *HttpBuilder) Post(endPoint string, body interface{}, option HttpBuilder
 	}
 
 	if option.LogRequestBody {
-		body, _ := io.ReadAll(payload)
-		LogI("HttpBuilder: Body:\n%s\n", string(body))
+		// Get Body
+		var body []byte
+		if payloadDebug != nil {
+			body, err = io.ReadAll(payloadDebug)
+			if err != nil {
+				return
+			}
+			// Assign Back the request body
+			payloadDebug = io.NopCloser(bytes.NewBuffer(body))
+			LogI("HttpBuilder: Request Body:\n%s\n", string(body))
+		}
 	}
 
 	// Basic Auth

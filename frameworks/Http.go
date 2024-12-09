@@ -75,6 +75,8 @@ func (http *HttpServer) serve() {
 		if err != nil {
 			lets.LogE(err.Error())
 		}
+
+		time.Sleep(time.Second)
 		http.serve()
 	}(http)
 }
