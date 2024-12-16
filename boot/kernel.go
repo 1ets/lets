@@ -49,10 +49,14 @@ func OnInit() {
 }
 
 // Bootstrap frameworks
-func OnMain() {
+func OnMain(waiter ...chan<- int) {
 	for _, runner := range Servers {
 		runner()
 	}
 
-	loader.RunningForever()
+	for _, wait := range waiter {
+		wait <- int(1)
+	}
+
+	loader.WaitForExitSignal()
 }
