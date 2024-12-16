@@ -138,6 +138,7 @@ func (l *launcher) printHeading(title string) {
 	var format = "// %-" + fmt.Sprintf("%v", spaceL) + "s%s%-" + fmt.Sprintf("%v", spaceR) + "s //\n"
 
 	fmt.Fprintf(l.writer, format, "", title, "")
+	l.hr2()
 }
 
 func (l *launcher) printData(field string, value any) {
