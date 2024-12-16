@@ -12,25 +12,17 @@ import (
 var Stopper = []func(){}
 
 // Hold the thread for exitting
-func RunningForever() {
-	go gracefulShutdown()
+func WaitForExitSignal() {
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+	signal.Notify(sig, syscall.SIGTERM)
+	sigTrigger := <-sig
 
-	forever := make(chan int)
-	<-forever
-}
+	lets.LogD("Shutdown signal recived [%s], running close procedures.", sigTrigger.String())
 
-// TODO: Fatal handling
-func gracefulShutdown() {
-	s := make(chan os.Signal, 1)
-	signal.Notify(s, os.Interrupt)
-	signal.Notify(s, syscall.SIGTERM)
-	go func() {
-		<-s
-		lets.LogD("Shutdown gracefully. ...zzZ")
+	OnShutdown()
 
-		OnShutdown()
-		os.Exit(0)
-	}()
+	os.Exit(0)
 }
 
 func OnShutdown() {
