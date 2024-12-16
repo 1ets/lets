@@ -142,6 +142,9 @@ func (l *launcher) printHeading(title string) {
 }
 
 func (l *launcher) printData(field string, value any) {
+	if value == nil {
+		return
+	}
 
 	switch reflect.TypeOf(value).Kind() {
 	case reflect.String:
@@ -155,6 +158,7 @@ func (l *launcher) printData(field string, value any) {
 
 func (l *launcher) printStruct(info any) {
 	rt := reflect.TypeOf(info)
+
 	if rt.Kind() == reflect.Pointer {
 		data := reflect.ValueOf(info).Elem().Interface()
 		l.printStruct(data)
