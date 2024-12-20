@@ -9,7 +9,7 @@ import (
 const (
 	REDIS_HOST     = "localhost"
 	REDIS_PORT     = "6379"
-	REDIS_USERNAME = "default"
+	REDIS_USERNAME = ""
 	REDIS_PASSWORD = ""
 	REDIS_DATABASE = 0
 )
@@ -52,11 +52,11 @@ func (r *Redis) GetPort() string {
 }
 
 func (r *Redis) GetUsername() string {
-	if r.Username == "" {
-		lets.LogW("Configs Redis: REDIS_USERNAME is not set in .env file, using default configuration.")
-		return REDIS_USERNAME
-	}
-	return r.Password
+	// if r.Username == "" {
+	// 	lets.LogW("Configs Redis: REDIS_USERNAME is not set in .env file, using default configuration.")
+	// 	return REDIS_USERNAME
+	// }
+	return r.Username
 }
 func (r *Redis) GetPassword() string {
 	if r.Password == "" {
@@ -83,6 +83,13 @@ func (r *Redis) GetRepositories() []IRedisRepository {
 }
 
 func (r *Redis) GetDsn() string {
+	//  return fmt.Sprintf("redis://%s:%s@%s:%s",
+	//  r.GetUsername(),
+	//  r.GetPassword(),
+	//  r.GetHost(),
+	//  r.GetPort(),
+	// )
+
 	return fmt.Sprintf("%s:%s",
 		r.GetHost(),
 		r.GetPort(),
