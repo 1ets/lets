@@ -17,6 +17,7 @@ var Initializer = []func(){
 // List of framework that start on lets
 var Servers = []func() []func(){
 	drivers.MySQL,
+	drivers.SqLiteClient,
 	drivers.Redis,
 	drivers.MongoDB,
 	frameworks.Grpc,
