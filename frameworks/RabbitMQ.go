@@ -4,9 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/1ets/lets"
@@ -68,27 +66,27 @@ func (r *rabbitServer) connect() {
 		return
 	}
 
-	type Queue struct {
-		Name  string `json:"name"`
-		VHost string `json:"vhost"`
-	}
+	// type Queue struct {
+	// 	Name  string `json:"name"`
+	// 	VHost string `json:"vhost"`
+	// }
 
-	manager := "http://127.0.0.1:15672/api/queues/"
-	client := &http.Client{}
-	req, _ := http.NewRequest("GET", manager, nil)
-	req.SetBasicAuth("guest", "guest")
-	resp, _ := client.Do(req)
+	// manager := "http://127.0.0.1:15672/api/queues/"
+	// client := &http.Client{}
+	// req, _ := http.NewRequest("GET", manager, nil)
+	// req.SetBasicAuth("guest", "guest")
+	// resp, _ := client.Do(req)
 
-	value := make([]Queue, 0)
-	json.NewDecoder(resp.Body).Decode(&value)
+	// value := make([]Queue, 0)
+	// json.NewDecoder(resp.Body).Decode(&value)
 
-	for _, queue := range value {
-		if strings.Contains(queue.Name, "amq.gen-") {
-			lets.LogD("%s deleted", queue.Name)
-			count, err := r.channel.QueueDelete(queue.Name, true, true, true)
-			lets.LogD("%v %v", count, err)
-		}
-	}
+	// for _, queue := range value {
+	// 	if strings.Contains(queue.Name, "amq.gen-") {
+	// 		lets.LogD("%s deleted", queue.Name)
+	// 		count, err := r.channel.QueueDelete(queue.Name, true, true, true)
+	// 		lets.LogD("%v %v", count, err)
+	// 	}
+	// }
 
 	lets.LogI("RabbitMQ: connected")
 }
