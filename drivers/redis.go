@@ -26,8 +26,18 @@ func (m *redisProvider) Connect() {
 	})
 }
 
+func (m *redisProvider) Disconnect() {
+	lets.LogI("SqLite Stopping ...")
+	err := m.redis.Close()
+	if err != nil {
+		lets.LogErr(err)
+		return
+	}
+	lets.LogI("SqLite Stopped ...")
+}
+
 // Define MySQL service host and port
-func Redis() {
+func Redis() (disconnectors []func()) {
 	if RedisConfig == nil {
 		return
 	}
@@ -41,9 +51,11 @@ func Redis() {
 		database: RedisConfig.GetDatabase(),
 	}
 	redis.Connect()
+	disconnectors = append(disconnectors, redis.Disconnect)
 
 	// Inject Gorm into repository
 	for _, repository := range RedisConfig.GetRepositories() {
 		repository.SetDriver(redis.redis)
 	}
+	return
 }

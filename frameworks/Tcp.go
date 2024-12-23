@@ -99,6 +99,17 @@ func (tcp *tcpServer) serve() {
 
 }
 
+func (tcp *tcpServer) Disconnect() {
+	lets.LogI("TCP Server Stopping ...")
+
+	if err := tcp.engine.Close(); err != nil {
+		lets.LogErr(err)
+		return
+	}
+
+	lets.LogI("TCP Server Stopped ...")
+}
+
 // TCP service struct
 type tcpClient struct {
 	dsn        string
@@ -186,8 +197,19 @@ func (tcp *tcpClient) connect() (err error) {
 	return
 }
 
+func (tcp *tcpClient) Disconnect() {
+	lets.LogI("TCP Client Stopping ...")
+
+	if err := tcp.connection.Close(); err != nil {
+		lets.LogErr(err)
+		return
+	}
+
+	lets.LogI("TCP Client Stopped ...")
+}
+
 // Start http service
-func Tcp() {
+func Tcp() (disconnectors []func()) {
 	if TcpConfig == nil {
 		return
 	}
@@ -201,6 +223,7 @@ func Tcp() {
 			server.init(config)
 
 			server.serve()
+			disconnectors = append(disconnectors, server.Disconnect)
 		}
 	}
 
@@ -219,6 +242,8 @@ func Tcp() {
 				for {
 					if err := client.connect(); err != nil {
 						lets.LogE("TCP Client: %s", err.Error())
+					} else {
+						disconnectors = append(disconnectors, client.Disconnect)
 					}
 
 					// Auto Reconnect every 10 seconds
@@ -229,4 +254,6 @@ func Tcp() {
 			}(client, config)
 		}
 	}
+
+	return
 }

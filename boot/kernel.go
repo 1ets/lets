@@ -15,7 +15,7 @@ var Initializer = []func(){
 }
 
 // List of framework that start on lets
-var Servers = []func(){
+var Servers = []func() []func(){
 	drivers.MySQL,
 	drivers.Redis,
 	drivers.MongoDB,
@@ -32,7 +32,7 @@ func AddInitializer(init func()) {
 }
 
 // Add initialization function and run before application starting
-func AddServers(server func()) {
+func AddServers(server func() (disconectors []func())) {
 	Servers = append(Servers, server)
 }
 
@@ -51,7 +51,11 @@ func OnInit() {
 // Bootstrap frameworks
 func OnMain(waiter ...chan<- int) {
 	for _, runner := range Servers {
-		runner()
+		stopper := runner()
+
+		for _, stopFunc := range stopper {
+			loader.Stopper = append(loader.Stopper, stopFunc)
+		}
 	}
 
 	for _, wait := range waiter {

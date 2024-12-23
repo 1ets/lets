@@ -63,13 +63,19 @@ func (ws *webSocketServer) setupRoutes() {
 	}
 }
 
+func (ws *webSocketServer) Disconnect() {
+	lets.LogI("WebSocket Server Stopping ...")
+
+	lets.LogI("WebSocket Server Stopped ...")
+}
+
 // Run service
 func (ws *webSocketServer) serve() {
 	go ws.engine.Run(ws.server)
 }
 
 // Start WebSocket service
-func WebSocket() {
+func WebSocket() (disconnectors []func()) {
 	if WebSocketConfig == nil {
 		return
 	}
@@ -80,4 +86,8 @@ func WebSocket() {
 	ws.init()
 	ws.setupRoutes()
 	ws.serve()
+
+	disconnectors = append(disconnectors, ws.Disconnect)
+
+	return
 }

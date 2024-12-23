@@ -81,8 +81,14 @@ func (http *HttpServer) serve() {
 	}(http)
 }
 
+func (r *HttpServer) Disconnect() {
+	lets.LogI("HTTP Server Stopping ...")
+
+	lets.LogI("HTTP Server Stopped ...")
+}
+
 // Start http service
-func Http() {
+func Http() (disconnectors []func()) {
 	if HttpConfig == nil {
 		return
 	}
@@ -95,4 +101,8 @@ func Http() {
 	http.middleware(http.engine)
 	http.router(http.engine)
 	http.serve()
+
+	disconnectors = append(disconnectors, http.Disconnect)
+
+	return
 }

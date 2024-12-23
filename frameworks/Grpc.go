@@ -39,6 +39,14 @@ func (rpc *grpcServer) serve() {
 	go rpc.engine.Serve(listener)
 }
 
+func (rpc *grpcServer) Disconnect() {
+	lets.LogI("GRPC server Stopping ...")
+
+	rpc.engine.Stop()
+
+	lets.LogI("GRPC server Stopped ...")
+}
+
 type grpcClient struct {
 	name    string
 	dsn     string
@@ -58,8 +66,19 @@ func (rpc *grpcClient) connect() (err error) {
 	return
 }
 
+func (rpc *grpcClient) Disconnect() {
+	lets.LogI("GRPC Client Stopping ...")
+
+	if err := rpc.engine.Close(); err != nil {
+		lets.LogErr(err)
+		return
+	}
+
+	lets.LogI("GRPC Client Stopped ...")
+}
+
 // Run gRPC server and client
-func Grpc() {
+func Grpc() (disconnectors []func()) {
 	if GrpcConfig == nil {
 		return
 	}
@@ -72,6 +91,7 @@ func Grpc() {
 		rpcServer.init(config)
 		rpcServer.router(rpcServer.engine)
 		rpcServer.serve()
+		disconnectors = append(disconnectors, rpcServer.Disconnect)
 	}
 
 	// Running gRPC client
@@ -89,9 +109,13 @@ func Grpc() {
 				continue
 			}
 
+			disconnectors = append(disconnectors, rpcClient.Disconnect)
+
 			for _, isc := range config.GetClients() {
 				isc.SetConnection(rpcClient.engine)
 			}
 		}
 	}
+
+	return
 }

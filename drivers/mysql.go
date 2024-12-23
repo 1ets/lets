@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/1ets/lets"
@@ -26,6 +27,7 @@ type mysqlProvider struct {
 	Gorm   *gorm.DB
 	Sql    *sql.DB
 	Config types.IMySQL
+	Mu     sync.RWMutex
 }
 
 func (m *mysqlProvider) Connect() {
@@ -79,8 +81,18 @@ func (m *mysqlProvider) Connect() {
 	m.Sql.SetConnMaxLifetime(time.Minute * 3)
 }
 
+func (m *mysqlProvider) Disconnect() {
+	lets.LogI("MySQL Stopping ...")
+	err := m.Sql.Close()
+	if err != nil {
+		lets.LogE(err.Error())
+		return
+	}
+	lets.LogI("MySQL Stopped ...")
+}
+
 // Define MySQL service host and port
-func MySQL() {
+func MySQL() (disconnectors []func()) {
 	if MySQLConfig == nil {
 		return
 	}
@@ -92,10 +104,11 @@ func MySQL() {
 			Config: config,
 		}
 		mySQL.Connect()
+		disconnectors = append(disconnectors, mySQL.Disconnect)
 
 		// Inject Gorm into repository
 		for _, repository := range config.GetRepositories() {
-			repository.SetDriver(mySQL.Gorm)
+			repository.SetDriver(mySQL.Gorm, &mySQL.Mu)
 		}
 
 		// Migration
@@ -108,6 +121,7 @@ func MySQL() {
 			Migrate(mySQL.Gorm, mySQL.Sql)
 		}
 	}
+	return
 }
 
 type migration struct {
